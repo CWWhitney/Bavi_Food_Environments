@@ -10,6 +10,8 @@ library(reshape2)
 library(tidyverse)
 ```
 
+Here we use Monte Carlo simulations based on expert knowledge. This is a well-established and flexible method for decision modeling. Allowing for use of expert-derived probabilities and variances to estimate outcomes, even when data is sparse. Capture the variability and uncertainty in model inputs. Guide decision-making by identifying likely outcomes and their variability.
+
 ## Generalized Function 
 
 The function simulates outcomes for decision options. The `simulate_outcomes_for_decisions` function is a Monte Carlo simulation framework designed to evaluate multiple decision options against predefined outcomes, incorporating stochastic variability (variability_list) to reflect real-world uncertainties. This function is intended for use in scenarios where decisions have probabilistic impacts on outcomes, such as ecological management, conservation planning, or policy evaluation. Source the  `simulate_outcomes_for_decisions` function with `source`.
@@ -34,7 +36,34 @@ The `variability_list` is a named list of functions, with each function generati
 
 The function returns `results` as a nested list with: Decision options (e.g., `control_access`). Outcome names (e.g., `SpeciesConservation`). Values: A vector of simulated outcome values for each combination of decision and outcome.
 
-```{r plot}
+## Simulation Workflow
+
+Decision Options:
+
+The function iterates over each decision option in `decision_options`. For each decision option, the function calculates all outcomes defined in the `outcome_effects` matrix. Outcomes are calculated as a weighted sum of decision variables (defined by the `outcome_effects` matrix) plus a random variability_list term. `variability_list` is generated, allowing for outcome-specific variability. Results are stored in a nested list, enabling easy access for further analysis.
+
+Example Use Case
+
+For a conservation project, this function will be used to simulate the effects of different park management strategies (e.g., restricting access, providing seedlings) on:
+
+- Species conservation: Probability of preserving species.
+- Dietary diversity: Impact on local food systems.
+- Expenditure: Financial cost to the park service.
+- Cultural heritage: Loss of traditional knowledge.
+
+By comparing the simulated outcomes for each strategy, decision-makers can identify trade-offs and prioritize actions. The function can handle multiple decision options and outcomes with ease. It incorporates expert-defined variability_list distributions for outcome variability. It also explicitly separates decision logic, outcome effects, and variability_list, ensuring clarity and reproducibility. For each decision option and outcome, the function calculates the **Outcome Value** using the following formula:
+
+\[
+\text{Outcome Value} = \sum_{i=1}^{n} \text{Decision}_i \times \text{Weight}_i + \text{variability_list}
+\]
+
+Where:
+
+- \(\text{Decision}_i\): A binary value (\(1\) or \(0\)) indicating if the \(i\)-th decision is active.
+- \(\text{Weight}_i\): The influence of the \(i\)-th decision variable on the outcome.
+- \(\text{variability_list}\): A random term representing variability or uncertainty, specific to the outcome and decision, as defined by the `variability_list`.
+
+```{r forest_access_graph}
 # Load necessary libraries
 library(DiagrammeR)
 library(DiagrammeRsvg)
@@ -72,36 +101,10 @@ forest_access_graph <- grViz("
 
 forest_access_graph
 ```
-## Simulation Workflow
-
-Decision Options:
-
-The function iterates over each decision option in `decision_options`. For each decision option, the function calculates all outcomes defined in the `outcome_effects` matrix. Outcomes are calculated as a weighted sum of decision variables (defined by the `outcome_effects` matrix) plus a random variability_list term. `variability_list` is generated, allowing for outcome-specific variability. Results are stored in a nested list, enabling easy access for further analysis.
-
-Example Use Case
-
-For a conservation project, this function will be used to simulate the effects of different park management strategies (e.g., restricting access, providing seedlings) on:
-
-- Species conservation: Probability of preserving species.
-- Dietary diversity: Impact on local food systems.
-- Expenditure: Financial cost to the park service.
-- Cultural heritage: Loss of traditional knowledge.
-
-By comparing the simulated outcomes for each strategy, decision-makers can identify trade-offs and prioritize actions. The function can handle multiple decision options and outcomes with ease. It incorporates expert-defined variability_list distributions for outcome variability. It also explicitly separates decision logic, outcome effects, and variability_list, ensuring clarity and reproducibility. For each decision option and outcome, the function calculates the **Outcome Value** using the following formula:
-
-\[
-\text{Outcome Value} = \sum_{i=1}^{n} \text{Decision}_i \times \text{Weight}_i + \text{variability_list}
-\]
-
-Where:
-
-- \(\text{Decision}_i\): A binary value (\(1\) or \(0\)) indicating if the \(i\)-th decision is active.
-- \(\text{Weight}_i\): The influence of the \(i\)-th decision variable on the outcome.
-- \(\text{variability_list}\): A random term representing variability or uncertainty, specific to the outcome and decision, as defined by the `variability_list`.
 
 # Decision model 
 
-Create a `decision_options` vector with all the decision options for the park. 
+Create a `decision_options` vector with all the decision options for the park and communities surrounding the park. 
 
 ```{r decision_options_list}
 # Define all decision options (each as a named vector)
@@ -173,17 +176,16 @@ head(results$control_access$SpeciesConservation)  # "Control Access" and "Specie
 head(results$provide_seedlings$DietaryDiversity)  # "Provide Seedlings" and "Dietary Diversity"
 ```
 
+Add species with simplified input
+
 ```{r species_params}
 source("functions/add_species_data.R")
 ```
-
-Use a nested list structure - each outcome contains decision options with corresponding Effect and SD values. 
 
 The `Effect` represents the magnitude and direction of influence that a specific decision option has on an outcome for a given species. Positive values indicate a beneficial effect and nagative values visa versa. For instance, a value of 0.8 for `control_access` on `Species Conservation` implies a strong positive effect, whereas -0.2 for `provide_seedlings` on `Dietary Diversity` indicates a slight reduction in dietary diversity. A value of 0 means no effect. 
 
 The SD (also `Variability_SD`) quantifies the uncertainty or variability in the effect values. A smaller SD (e.g., 0.05) indicates high confidence in `Effect`, suggesting that the impact is consistent across scenarios. Larger SD (e.g., 0.2) reflects greater uncertainty, for example, an SD of 0.05 for `control_access` on `Species Conservation` indicates low variability and high confidence, whereas an SD of 0.15 for `provide_seedlings` on `Dietary Diversity` denotes moderate uncertainty. 
 
-Add species with simplified input
 ```{r add_species_data}
 source("functions/add_species_data.R")
 
@@ -302,6 +304,7 @@ simulations_bidens_pilosa <- simulate_outcomes_for_decisions(
 ```
 
 We also reverse the expenses, since higher expenses are worse, they should appear as a negative result in the plot. 
+
 ```{r data_mgmt}
 # Prepare the data
 source("functions/prepare_heatmap_data.R")
@@ -398,3 +401,4 @@ plot_aggregate_effects <- function(data, title = "Aggregate Effects Across Speci
 plot_aggregate_effects(summary_data)
 
 ```
+
