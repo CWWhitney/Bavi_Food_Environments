@@ -34,6 +34,44 @@ The `variability_list` is a named list of functions, with each function generati
 
 The function returns `results` as a nested list with: Decision options (e.g., `control_access`). Outcome names (e.g., `SpeciesConservation`). Values: A vector of simulated outcome values for each combination of decision and outcome.
 
+```{r plot}
+# Load necessary libraries
+library(DiagrammeR)
+library(DiagrammeRsvg)
+library(rsvg)
+
+# Create the updated graph
+forest_access_graph <- grViz("
+  digraph forest_access_model {
+    graph [layout = dot, rankdir = LR]
+
+    // Define node styles
+    node [shape = box, fontname = Helvetica]
+
+    // Define nodes
+    ControlAccess [label = 'Control Access']
+    ProvideAccessControlHarvest [label = 'Provide Access + Control Harvest']
+    AllowAccessForestParts [label = 'Allow Access to Forest Parts']
+    AllowAccessLimitedTime [label = 'Allow Access for Limited Time']
+    ProvideSeedlings [label = 'Provide Seedlings']
+
+    SpeciesConservation [label = 'Species Conservation']
+    DietaryDiversity [label = 'Dietary Diversity']
+    SustainableFoodEnv [label = 'Sustainable Food Environment']
+    ParkExpenditure [label = 'Park Expenditure']
+    TraditionalKnowledge [label = 'Traditional Knowledge']
+
+    // Define relationships between nodes
+    ControlAccess -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
+    ProvideAccessControlHarvest -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
+    AllowAccessForestParts -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
+    AllowAccessLimitedTime -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
+    ProvideSeedlings -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
+  }
+")
+
+forest_access_graph
+```
 ## Simulation Workflow
 
 Decision Options:
