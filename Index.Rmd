@@ -429,16 +429,16 @@ names(data) <- cleaned_names
 
 ### Extract relevant information from the data
 
-Look for all the words to be translated with `unique(data$current_reserves)`. Add them to the dictionary `translation_dict` in `translate.R`
+Look for all the words to be translated with `unique(data$current_reserves)`. Add them to the dictionary in `dictionaries.R`
 
 ```{r define_dictionary}
 # Source dictionary
-source("functions/translate.R")
+source("functions/dictionaries.R")
 # function to translate the column
 source("functions/translate_column.R")
 ```
 
-If a species is rare (`current_reserves` is low), `SpeciesConservation` might get better with more restrictions. 
+If a species is rare (`current_reserves` is `Few` or `Not many`), `SpeciesConservation` might get better with more restrictions. `control_access` and `provide_seedlings` will have a higher effect with lower SD, all the other options will likely be reduced. The effect would be similar for `SustainableFoodEnv`. `DietaryDiversity` would not be likely to change much. `ParkExpenditure` might also go up with more control. `TraditionalKnowledge` would likely not change much  since it is already a rare plant. If `current_reserves` are `Many` then the effects will be the opposite. 
 
 ```{r translate_current_reserves}
  translate_column(data$current_reserves, translation_dict2)
@@ -450,7 +450,7 @@ If `parts_used` are roots, stems or whole plants then we can translate this as `
 translate_column(data$parts_used, translation_dict3)
 ```
 
-If `nutritional_value` is high then the effects on `DietaryDiversity` will be higher
+If `nutritional_value` is high then the effects on `DietaryDiversity` will be higher. 
 
 ```{r translate_nutritional_value}
 translate_column(data$nutritional_value, translation_dict2)
