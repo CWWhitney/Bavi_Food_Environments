@@ -402,3 +402,63 @@ plot_aggregate_effects(summary_data)
 
 ```
 
+# Working with data from Bavi
+
+The data is in Vietnamese so we translate it to English. 
+
+```{r }
+data <- read.csv("data/data.csv")
+
+# translate names(data)
+
+data_names <- c(
+  "Family.plant", "Scientific.name", "Scientific.name.Yen.Hoai.edit",
+  "Local.name", "Common.name", "Local.name...Dao.language.", "Habitat",
+  "Lifeform", "Uses.To.cure.what.", "Value", "Parts used", "Usage", "Frequency
+  of use" , "Number of users" , "Current reserves" , "Harvest sources" ,
+  "Cultivation techniques" , "Market supply potential" , "Discovery of
+  processed dishes" , "Nutritional value"
+)
+
+
+# Convert to snake_case (replace spaces and dots with underscores, make lowercase)
+cleaned_names <- gsub("[ .]+", "_", tolower(data_names))
+# Assign cleaned column names directly to the data frame
+names(data) <- cleaned_names
+```
+
+### Extract relevant information from the data
+
+Look for all the words to be translated with `unique(data$current_reserves)`. Add them to the dictionary `translation_dict` in `translate.R`
+
+```{r define_dictionary}
+# Source dictionary
+source("functions/translate.R")
+# function to translate the column
+source("functions/translate_column.R")
+```
+
+If a species is rare (`current_reserves` is low), `SpeciesConservation` might get better with more restrictions. 
+
+```{r translate_current_reserves}
+ translate_column(data$current_reserves, translation_dict2)
+```
+
+If `parts_used` are roots, stems or whole plants then we can translate this as `destructive` and all other uses as `non_destructive`. The former type of use is more likely to have a negative `SpeciesConservation` effect with more access allowed.  
+
+```{r translate_parts_used}
+translate_column(data$parts_used, translation_dict3)
+```
+
+If `nutritional_value` is high then the effects on `DietaryDiversity` will be higher
+
+```{r translate_nutritional_value}
+translate_column(data$nutritional_value, translation_dict2)
+```
+
+If a species is important (`number_of_users` is high) `TraditionalKnowledge` might suffer under `control_access`
+
+```{r translate_number_of_users}
+translate_column(data$number_of_users, translation_dict2)
+```
+
