@@ -1,15 +1,12 @@
----
-title: "Generate prior data for species in Bavi"
-output: html_document
----
 
-# Add species with simplified prior input
+## Add species with simplified prior input
 
 ```{r species_params}
 source("functions/add_species_data.R")
+library(tidyverse)
 ```
 
-The `Effect` represents the magnitude and direction of influence that a specific decision option has on an outcome for a given species. Positive values indicate a beneficial effect and nagative values visa versa. For instance, a value of 0.8 for `control_access` on `Species Conservation` implies a strong positive effect, whereas -0.2 for `provide_seedlings` on `Dietary Diversity` indicates a slight reduction in dietary diversity. A value of 0 means no effect. 
+The `Effect` represents the magnitude and direction of influence that a specific decision option has on an outcome for a given species. Positive values indicate a beneficial effect and negative values visa versa. For instance, a value of 0.8 for `control_access` on `Species Conservation` implies a strong positive effect, whereas -0.2 for `provide_seedlings` on `Dietary Diversity` indicates a slight reduction in dietary diversity. A value of 0 means no effect. 
 
 The SD (also `Variability_SD`) quantifies the uncertainty or variability in the effect values. A smaller SD (e.g., 0.05) indicates high confidence in `Effect`, suggesting that the impact is consistent across scenarios. Larger SD (e.g., 0.2) reflects greater uncertainty, for example, an SD of 0.05 for `control_access` on `Species Conservation` indicates low variability and high confidence, whereas an SD of 0.15 for `provide_seedlings` on `Dietary Diversity` denotes moderate uncertainty. 
 

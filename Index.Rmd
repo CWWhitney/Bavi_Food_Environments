@@ -302,3 +302,9 @@ plot_aggregate_effects(summary_data)
 
 ```
 
+# Update based on field observations
+
+```{r child = "Update.Rmd"}
+```
+
+
