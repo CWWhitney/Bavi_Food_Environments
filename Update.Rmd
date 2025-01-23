@@ -1,0 +1,213 @@
+---
+title: "Update"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(reshape2)
+library(tidyverse)
+
+effects_sd_map_bidens_pilosa <- source("data/effects_sd_map_bidens_pilosa.R")
+# Observed data
+data <- read.csv("data/observation_data_bavi.csv")
+```
+
+# Working with data from Bavi
+
+The data is in Vietnamese so we translate it to English. 
+
+```{r }
+data <- read.csv("data/observation_data_bavi.csv")
+
+# translate names(data)
+
+data_names <- c(
+  "Family.plant", "Scientific.name", "Scientific.name.Yen.Hoai.edit",
+  "Local.name", "Common.name", "Local.name...Dao.language.", "Habitat",
+  "Lifeform", "Uses.To.cure.what.", "Value", "Parts used", "Usage", "Frequency
+  of use" , "Number of users" , "Current reserves" , "Harvest sources" ,
+  "Cultivation techniques" , "Market supply potential" , "Discovery of
+  processed dishes" , "Nutritional value"
+)
+
+
+# Convert to snake_case (replace spaces and dots with underscores, make lowercase)
+cleaned_names <- gsub("[ .]+", "_", tolower(data_names))
+# Assign cleaned column names directly to the data frame
+names(data) <- cleaned_names
+```
+
+### Extract relevant information from the data
+
+Look for all the words to be translated with `unique(data$current_reserves)`. Add them to the dictionary in `dictionaries.R`
+
+```{r define_dictionary}
+# Source dictionary
+source("functions/dictionaries.R")
+# function to translate the column
+source("functions/translate_column.R")
+```
+
+If a species is rare (`current_reserves` is `Few` or `Not many`), `SpeciesConservation` effect with more restrictions. `control_access` and `provide_seedlings` will have a higher effect with lower SD, all the other options will likely be reduced. The effect would be similar for `SustainableFoodEnv`. `DietaryDiversity` would not be likely to change much. `ParkExpenditure` might also go up with more control. `TraditionalKnowledge` would likely not change much  since it is already a rare plant. If `current_reserves` are `Many` then the effects will be the opposite. 
+
+```{r translate_current_reserves}
+ translate_column(data$current_reserves, translation_dict2)
+```
+
+## Updating with parts_used data
+
+If `parts_used` are roots, stems or whole plants then we can translate this as `destructive` and all other uses as `non_destructive`. The former type of use is more likely to have a negative `SpeciesConservation` effect with more access allowed.  
+
+```{r translate_parts_used}
+translate_column(data$parts_used, translation_dict3)
+```
+
+If `nutritional_value` is high then the effects on `DietaryDiversity` will be higher. 
+
+```{r translate_nutritional_value}
+translate_column(data$nutritional_value, translation_dict2)
+```
+
+If a species is important (`number_of_users` is `Many`) `TraditionalKnowledge` might suffer under `control_access`
+
+```{r translate_number_of_users}
+translate_column(data$number_of_users, translation_dict2)
+```
+
+
+```{r }
+normalize_scientific_names <- function(data) {
+  # Ensure scientific_name is a character vector
+  data$scientific_name <- as.character(data$scientific_name)
+  
+  # Function to clean and convert to snake_case
+  clean_name <- function(name) {
+    name <- trimws(name)  # Remove leading/trailing spaces
+    name <- tolower(name)  # Convert to lowercase
+    name <- gsub("[ .]+", "_", name)  # Replace spaces and dots with underscores
+    return(name)
+  }
+  
+  # Apply function to all names
+  data$scientific_name_snake_case <- sapply(data$scientific_name, clean_name, USE.NAMES = FALSE)
+  
+  return(data)
+}
+
+data <- normalize_scientific_names(data)  # Normalize names
+
+```
+
+
+```{r }
+bayesian_update_effects <- function(effects_sd_map, data_path, species_name = "bidens_pilosa",
+                                    effect_multiplier = 1.5, sd_multiplier = 0.5) {
+  # Load observation data
+  data <- read.csv(data_path, stringsAsFactors = FALSE)
+  
+  # Check if the species is used destructively
+  destructive_harvest <- any(data$scientific_name_snake_case == species_name & data$parts_used == "destructive")
+
+  # Apply Bayesian update if species is destructively harvested
+  if (destructive_harvest) {
+    for (outcome in names(effects_sd_map)) {  # Loop over all outcomes
+      for (decision in names(effects_sd_map[[outcome]])) {  # Loop over all decision options
+        effects_sd_map[[outcome]][[decision]]$Effect <- 
+          effects_sd_map[[outcome]][[decision]]$Effect * effect_multiplier
+        
+        effects_sd_map[[outcome]][[decision]]$SD <- 
+          effects_sd_map[[outcome]][[decision]]$SD * sd_multiplier
+      }
+    }
+  }
+  
+  return(effects_sd_map)
+}
+```
+
+```{r }
+# Apply Bayesian updates based on observed data
+updated_effects <- bayesian_update_effects(effects_sd_map_bidens_pilosa, "data/observation_data_bavi.csv")
+
+```
+
+```{r }
+flatten_effects_to_df <- function(effects_sd_map) {
+  results <- list()  
+
+  # Ensure we access the actual values (skip the "value" wrapper)
+  if ("value" %in% names(effects_sd_map)) {
+    effects_sd_map <- effects_sd_map$value
+  }
+
+  for (outcome in names(effects_sd_map)) {
+    for (decision in names(effects_sd_map[[outcome]])) {
+      
+      # Debugging: Check if the structure is correct
+      print(paste("Processing:", outcome, "->", decision))
+      print(str(effects_sd_map[[outcome]][[decision]]))  
+
+      # Ensure effect values exist before adding
+      if (is.list(effects_sd_map[[outcome]][[decision]]) &&
+          !is.null(effects_sd_map[[outcome]][[decision]]$Effect) &&
+          !is.null(effects_sd_map[[outcome]][[decision]]$SD)) {
+        
+        results[[length(results) + 1]] <- list(
+          Decision = decision,
+          Outcome = outcome,
+          MeanValue = as.numeric(effects_sd_map[[outcome]][[decision]]$Effect),
+          SD = as.numeric(effects_sd_map[[outcome]][[decision]]$SD)
+        )
+      } else {
+        print(paste("Skipping invalid entry:", outcome, decision))
+      }
+    }
+  }
+
+  # Convert list to data frame
+  if (length(results) > 0) {
+    results_df <- do.call(rbind, lapply(results, as.data.frame))
+    return(results_df)
+  } else {
+    warning("No valid data found in effects_sd_map.")
+    return(data.frame(Decision=character(), Outcome=character(), MeanValue=numeric(), SD=numeric()))
+  }
+}
+
+
+```
+
+```{r }
+effects_df <- flatten_effects_to_df(updated_effects)
+
+effects_df$Decision <- as.character(effects_df$Decision)
+effects_df$Outcome <- as.character(effects_df$Outcome)
+```
+
+```{r }
+plot_bubble_heatmap <- function(heatmap_data, title = "Updated Decision Outcomes") {
+  library(ggplot2)
+  
+  ggplot(heatmap_data, aes(x = Decision, y = Outcome, size = 1 / SD, fill = MeanValue)) +
+    geom_point(shape = 21, color = "black", alpha = 0.7) +
+    scale_fill_gradient2(low = "red", mid = "white", high = "green", midpoint = 0) +
+    scale_size_continuous(name = "Confidence (1/SD)", range = c(2, 10)) +
+    labs(
+      title = title,
+      x = "Decision Options",
+      y = "Outcomes",
+      fill = "Mean Effect"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = "right"
+    )
+}
+```
+
+```{r }
+plot_bubble_heatmap(effects_df)
+```
