@@ -1,0 +1,109 @@
+---
+title: "Generate prior data for species in Bavi"
+output: html_document
+---
+
+# Add species with simplified prior input
+
+```{r species_params}
+source("functions/add_species_data.R")
+```
+
+The `Effect` represents the magnitude and direction of influence that a specific decision option has on an outcome for a given species. Positive values indicate a beneficial effect and nagative values visa versa. For instance, a value of 0.8 for `control_access` on `Species Conservation` implies a strong positive effect, whereas -0.2 for `provide_seedlings` on `Dietary Diversity` indicates a slight reduction in dietary diversity. A value of 0 means no effect. 
+
+The SD (also `Variability_SD`) quantifies the uncertainty or variability in the effect values. A smaller SD (e.g., 0.05) indicates high confidence in `Effect`, suggesting that the impact is consistent across scenarios. Larger SD (e.g., 0.2) reflects greater uncertainty, for example, an SD of 0.05 for `control_access` on `Species Conservation` indicates low variability and high confidence, whereas an SD of 0.15 for `provide_seedlings` on `Dietary Diversity` denotes moderate uncertainty. 
+
+```{r add_species_data}
+source("functions/add_species_data.R")
+
+# Initialize an empty dataset
+species_data <- data.frame()
+
+# Define decision options and outcomes
+decision_options <- c("control_access", "provide_access_control_harvest", 
+                      "allow_access_forest_parts", "allow_access_limited_time", "provide_seedlings")
+outcomes <- c("SpeciesConservation", "DietaryDiversity", "SustainableFoodEnv", 
+              "ParkExpenditure", "TraditionalKnowledge")
+
+# List of species and their corresponding `.R` files
+species_files <- list(
+  bidens_pilosa = "data/effects_sd_map_bidens_pilosa.R",               
+  # Bidens pilosa
+  amomum_villosum = "data/effects_sd_map_amomum_villosum.R",           
+  # Amomum villosum
+  begonia = "data/effects_sd_map_begonia.R",                 
+  # Begonia
+  bischofia_javanica = "data/effects_sd_map_bischofia_javanica.R",    
+  # Bischofia javanica Blum
+  cheilocostus_speciosus = "data/effects_sd_map_cheilocostus_speciosus.R", 
+  # Cheilocostus speciosus
+  cyclosorus_acuminatus = "data/effects_sd_map_cyclosorus_acuminatus.R",
+  # Cyclosorus acuminatus (Houtt)
+  erythropalum_scandens = "data/effects_sd_map_erythropalum_scandens.R", 
+  # Erythropalum scandens Blume
+  ficus_auriculata = "data/effects_sd_map_ficus_auriculata.R", 
+  # Ficus auriculata
+  ficus_callosa = "data/effects_sd_map_ficus_callosa.R",     
+  # Ficus callosa Willd.
+  gynura_procumbens = "data/effects_sd_map_gynura_procumbens.R",        
+  # Gynura procumbens (Lour.)
+  melientha_suavis = "data/effects_sd_map_melientha_suavis.R",      
+  # Melientha suavis
+  musa_brachycarpa = "data/effects_sd_map_musa_brachycarpa.R",           
+  # Musa brachycarpa Back
+  ophiopogon_reptans = "data/effects_sd_map_ophiopogon_reptans.R",   
+  # Ophiopogon reptans
+  rubus_cochinchinensis = "data/effects_sd_map_rubus_cochinchinensis.R",     
+  # Rubus cochinchinensis
+  saurauia_tristyla = "data/effects_sd_map_saurauia_tristyla.R",      
+  # Saurauia tristyla DC.
+  schefflera_heptaphylla = "data/effects_sd_map_schefflera_heptaphylla.R", 
+  # Schefflera heptaphylla
+  sterculia_foetida = "data/effects_sd_map_sterculia_foetida.R",     
+  # Sterculia foetida L.
+  tetrapanax_papyriferus = "data/effects_sd_map_tetrapanax_papyriferus.R", 
+  # Tetrapanax papyriferus
+  tradescantia_pallida = "data/effects_sd_map_tradescantia_pallida.R" 
+  # Tradescantia pallida
+)
+
+# Loop through species and add their data
+for (species in names(species_files)) {
+  species_data <- add_species_data(
+    existing_data = species_data,
+    species_name = species,
+    decision_options = decision_options,
+    outcomes = outcomes,
+    species_file_path = species_files[[species]]
+  )
+}
+
+```
+
+### Check the updated data for the species
+
+```{r check_sp_data}
+head(species_data)
+```
+
+###  Load the built data and change format (for reading)
+
+```{r load_built_data}
+species_params <- as.data.frame(species_data)
+#change to numeric
+species_params$Effect <- as.numeric(species_params$Effect)
+species_params$Variability_SD <- as.numeric(species_params$Variability_SD)
+```
+
+### Clean the species level data (update botanical names). 
+
+```{r tolower}
+species_params$Species <- tolower(trimws(species_params$Species))
+```
+
+### Construct the species_data object for each species based on `species_params`.
+
+```{r}
+source("functions/generate_species_data.R")
+species_data <- generate_species_data(species_params)
+```
