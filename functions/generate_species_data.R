@@ -1,3 +1,43 @@
+#' Generate Species-Specific Outcome Effects and Variability Functions
+#'
+#' This function processes species parameters to generate structured data
+#' for decision modeling. It filters invalid rows, normalizes species names,
+#' constructs an outcome-effect matrix, and defines variability functions
+#' for stochastic simulations.
+#'
+#' @param species_params A data frame containing species parameters with the following columns:
+#'   - `Species`: Character, species names.
+#'   - `Outcome`: Character, names of outcomes affected by decisions.
+#'   - `Decision.Option`: Character, decision options applied to species.
+#'   - `Effect`: Numeric, effect size of each decision on each outcome.
+#'   - `Variability_SD`: Numeric, standard deviation for variability in outcome effects.
+#'
+#' @return A named list where each element corresponds to a species. Each species contains:
+#'   - `outcome_effects`: A matrix where rows represent outcomes, columns represent decisions,
+#'     and values indicate the effect sizes.
+#'   - `variability_list`: A list of functions generating normally distributed noise for each outcome.
+#'
+#' @examples
+#' # Example data frame with species parameters
+#' species_params <- data.frame(
+#'   Species = c("Panthera leo", "Panthera leo", "Gorilla beringei"),
+#'   Outcome = c("Population", "Food Availability", "Habitat Loss"),
+#'   Decision.Option = c("Protection", "Reintroduction", "Afforestation"),
+#'   Effect = c(0.8, 0.5, -0.6),
+#'   Variability_SD = c(0.1, 0.2, 0.15)
+#' )
+#'
+#' # Generate species-specific outcome effects and variability
+#' species_data <- generate_species_data(species_params)
+#'
+#' # Access the outcome-effect matrix for Panthera leo
+#' species_data$panthera_leo$outcome_effects
+#'
+#' # Simulate noise for "Population" in Panthera leo
+#' noise_samples <- species_data$panthera_leo$variability_list$Population(10000)
+#' hist(noise_samples, main = "Simulated Variability in Population Outcome",
+#'      xlab = "Noise Value", breaks = 50)
+
 generate_species_data <- function(species_params) {
   # Normalize species names
   species_params$Species <- tolower(trimws(species_params$Species))
