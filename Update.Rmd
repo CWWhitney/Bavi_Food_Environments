@@ -41,7 +41,7 @@ names(data) <- cleaned_names
 
 ### Extract relevant information from the data
 
-Look for all the words to be translated with `unique(data$current_reserves)`. Add them to the dictionary in `dictionaries.R`
+Look for all the words to be translated with `unique(data$current_reserves)`. Add them to the dictionary in `dictionaries.R` and translate with `translate_column`.
 
 ```{r define_dictionary}
 # Source dictionary
@@ -50,7 +50,7 @@ source("functions/dictionaries.R")
 source("functions/translate_column.R")
 ```
 
-If a species is rare (`current_reserves` is `Few` or `Not many`), `SpeciesConservation` effect with more restrictions. `control_access` and `provide_seedlings` will have a higher effect with lower SD, all the other options will likely be reduced. The effect would be similar for `SustainableFoodEnv`. `DietaryDiversity` would not be likely to change much. `ParkExpenditure` might also go up with more control. `TraditionalKnowledge` would likely not change much  since it is already a rare plant. If `current_reserves` are `Many` then the effects will be the opposite. 
+If `current_reserves` is `Few` or `Not many` (species is rare) we can expect positive `SpeciesConservation` effects with more restrictions. `control_access` and `provide_seedlings` will have a higher effect with lower SD, all the other options will likely be reduced. The effect would be similar for `SustainableFoodEnv`. `DietaryDiversity` would not be likely to change much. `ParkExpenditure` might also go up with more control. `TraditionalKnowledge` would likely not change much  since it is already a rare plant. If `current_reserves` are `Many` then the effects will be the opposite. 
 
 ```{r translate_current_reserves}
  translate_column(data$current_reserves, translation_dict2)
@@ -58,22 +58,25 @@ If a species is rare (`current_reserves` is `Few` or `Not many`), `SpeciesConser
 
 ## Updating with parts_used data
 
-If `parts_used` are roots, stems or whole plants then we can translate this as `destructive` and all other uses as `non_destructive`. The former type of use is more likely to have a negative `SpeciesConservation` effect with more access allowed.  
+If `parts_used` are roots, stems or whole plants then we can translate this as `destructive` and all other uses as `non_destructive`. The former type of use is more likely to have a negative `SpeciesConservation` effect with more access allowed and will shift the result.  
 
 ```{r translate_parts_used}
 translate_column(data$parts_used, translation_dict3)
+  # destructive_harvest <- any(data$scientific_name_snake_case == species_name & data$parts_used == "destructive")
 ```
 
-If `nutritional_value` is high then the effects on `DietaryDiversity` will be higher. 
+If `nutritional_value` is high then the effects on `DietaryDiversity` will be raised. If `Low` effects on `DietaryDiversity` will be lowered. 
 
 ```{r translate_nutritional_value}
 translate_column(data$nutritional_value, translation_dict2)
+
 ```
 
-If a species is important (`number_of_users` is `Many`) `TraditionalKnowledge` might suffer under `control_access`
+If `number_of_users` is `Many` then `TraditionalKnowledge` Effect would be lower and SD would be narrower for `control_access`. If it is `Few` then `DietaryDiversity` effects will be lower. 
 
 ```{r translate_number_of_users}
 translate_column(data$number_of_users, translation_dict2)
+
 ```
 
 
@@ -102,13 +105,18 @@ data <- normalize_scientific_names(data)  # Normalize names
 
 
 ```{r }
-bayesian_update_effects <- function(effects_sd_map, data_path, species_name = "bidens_pilosa",
+update_effects <- function(effects_sd_map, data_path, species_name = "bidens_pilosa",
                                     effect_multiplier = 1.5, sd_multiplier = 0.5) {
   # Load observation data
   data <- read.csv(data_path, stringsAsFactors = FALSE)
   
   # Check if the species is used destructively
   destructive_harvest <- any(data$scientific_name_snake_case == species_name & data$parts_used == "destructive")
+  # high_nutrition <- any(data$scientific_name_snake_case == species_name & data$nutritional_value == "High") # If `nutritional_value` is high then the effect_multiplier on `DietaryDiversity` will be raised. 
+  # high_nutrition <- any(data$scientific_name_snake_case == species_name & data$nutritional_value == "Low") # If `nutritional_value` is `Low` effect_multiplier on `DietaryDiversity` will be lowered and sd_multiplier will increase. 
+  # high_number_of_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Many") # If `number_of_users` is `Many` then `TraditionalKnowledge` effect_multiplier would be lower and sd_multiplier would be narrower for `control_access`. 
+  # few_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Few") # `number_of_users` is `Few` then `DietaryDiversity` effect_multiplier will be lower.   
+  
 
   # Apply Bayesian update if species is destructively harvested
   if (destructive_harvest) {
@@ -127,9 +135,95 @@ bayesian_update_effects <- function(effects_sd_map, data_path, species_name = "b
 }
 ```
 
+# Bayesian Updating
+
+Use `Normal-Gaussian conjugate updating` for means and standard deviations.
+Here we use `tidyverse` `dplyr` and `purrr` for clean data transformations.
+The `Effects` and `SDs` are adjusted based on species-specific conditions. The `update_effects_bayesian` function assumes the prior effect is normally distributed. It incorporates new information (condition-based adjustments) using a weighted update. `map()` from `purrr` updates all the expected effects from the observations in four ways: 
+
+- `parts_used` are roots or whole plants is a destructive harvest, which increases effect size and decreases uncertainty .
+- High/Low Nutrition: Modifies effect and SD accordingly.
+- User Count Impact: Adjusts effect size and uncertainty.
+- This Bayesian approach dynamically integrates observed data into effect estimation while preserving uncertainty, ensuring a structured update.
+
 ```{r }
+library(dplyr)
+library(tidyr)
+library(purrr)
+
+update_effects_bayesian <- function(effects_sd_map,  species_name,
+                                    effect_multiplier = .3, sd_multiplier = .1, 
+                                    prior_sd = 0.1, observed_weight = 0.5) {
+  # Load observation data
+  data <- data
+  
+  # Check conditions based on the observed data
+  destructive_harvest <- any(data$scientific_name_snake_case == species_name & data$parts_used == "destructive")
+  high_nutrition <- any(data$scientific_name_snake_case == species_name & data$nutritional_value == "High")
+  low_nutrition <- any(data$scientific_name_snake_case == species_name & data$nutritional_value == "Low")
+  high_number_of_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Many")
+  few_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Few")
+  
+  # Function for Bayesian updating (Gaussian Normal prior)
+  bayesian_update <- function(prior_mean, prior_sd, new_data_mean, new_data_sd, weight) {
+    posterior_mean <- (prior_mean / prior_sd^2 + new_data_mean / new_data_sd^2) / 
+                      (1 / prior_sd^2 + 1 / new_data_sd^2)
+    posterior_sd <- sqrt(1 / (1 / prior_sd^2 + 1 / new_data_sd^2)) * weight
+    return(list(mean = posterior_mean, sd = posterior_sd))
+  }
+  
+  # Apply updates based on conditions
+  if (destructive_harvest || high_nutrition || low_nutrition || high_number_of_users || few_users) {
+    effects_sd_map <- map(effects_sd_map, function(outcome_map) {
+      map(outcome_map, function(decision_map) {
+        # Extract prior values
+        prior_effect <- decision_map$Effect
+        prior_sd <- decision_map$SD
+        
+        # Adjust effect based on conditions
+        observed_effect <- prior_effect
+        observed_sd <- prior_sd
+        
+        if (destructive_harvest) {
+          observed_effect <- observed_effect * effect_multiplier
+          observed_sd <- observed_sd * sd_multiplier
+        }
+        if (high_nutrition) {
+          observed_effect <- observed_effect * 1.2  # Boost effect slightly
+        }
+        if (low_nutrition) {
+          observed_effect <- observed_effect * 0.8
+          observed_sd <- observed_sd * 1.2
+        }
+        if (high_number_of_users) {
+          observed_effect <- observed_effect * 0.9
+          observed_sd <- observed_sd * 0.8
+        }
+        if (few_users) {
+          observed_effect <- observed_effect * 0.7
+        }
+        
+        # Apply Bayesian update
+        updated_values <- bayesian_update(prior_effect, prior_sd, observed_effect, observed_sd, observed_weight)
+        
+        decision_map$Effect <- updated_values$mean
+        decision_map$SD <- updated_values$sd
+        
+        return(decision_map)
+      })
+    })
+  }
+  
+  return(effects_sd_map)
+}
+
+```
+
+```{r }
+effect_multiplier = 0.3 
+sd_multiplier = 0.1
 # Apply Bayesian updates based on observed data
-updated_effects <- bayesian_update_effects(effects_sd_map_bidens_pilosa, "data/observation_data_bavi.csv")
+effects_updated <- update_effects_bayesian(effects_sd_map_bidens_pilosa, species_name =  "bidens_pilosa")
 
 ```
 
@@ -180,7 +274,7 @@ flatten_effects_to_df <- function(effects_sd_map) {
 ```
 
 ```{r }
-effects_df <- flatten_effects_to_df(updated_effects)
+effects_df <- flatten_effects_to_df(effects_updated)
 
 effects_df$Decision <- as.character(effects_df$Decision)
 effects_df$Outcome <- as.character(effects_df$Outcome)
