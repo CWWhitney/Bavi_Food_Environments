@@ -1,3 +1,36 @@
+#' Translate a Data Column Using a Dictionary
+#'
+#' This function translates values in a character vector by normalizing text
+#' (removing accents, converting to lowercase, and replacing spaces with underscores)
+#' and mapping them to a provided dictionary. If a value is not found in the dictionary,
+#' it remains unchanged. The function also prints missing translations for debugging.
+#'
+#' @param data_column A character vector containing the data to be translated.
+#' @param dictionary A named character vector where names represent the cleaned text values
+#' and the corresponding values are the translated text.
+#'
+#' @return A character vector with translated values based on the dictionary.
+#'
+#' @examples
+#' # Define a sample dictionary for translation
+#' translation_dict <- c(
+#'   "khong_nhieu" = "Not many",
+#'   "nhieu" = "Many",
+#'   "it" = "Few",
+#'   "rat_nhieu" = "Very many",
+#'   "trung_binh" = "Moderate",
+#'   "han_che" = "Limited",
+#'   "rat_it" = "Very few"
+#' )
+#'
+#' # Example data column with Vietnamese words
+#' data_column <- c("không nhiều", "nhiều", "ít", "rất nhiều", "trung bình", "hạn chế", "rất ít", "không có")
+#'
+#' # Translate the column
+#' translated_data <- translate_column(data_column, translation_dict)
+#' print(translated_data)
+#'
+#'
 # Load required package
 library(stringi)
 
@@ -43,15 +76,5 @@ translate_column <- function(data_column, dictionary) {
   return(translated_column)
 }
 
-# Example dictionary
-translation_dict2 <- c(
-  "khong_nhieu" = "Not many",
-  "nhieu"   = "Many",    
-  "it" = "Few",
-  "rat_nhieu" = "Very many",
-  "trung_binh" = "Moderate",
-  "han_che" = "Limited",
-  "rat_it" = "Very few"
-)
 
 
