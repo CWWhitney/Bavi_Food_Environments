@@ -11,7 +11,12 @@
 #'
 #' @return A character vector with translated values based on the dictionary.
 #'
+#' @importFrom stringi stri_trans_general
+#'
 #' @examples
+#' # Load required package
+#' library(stringi)
+#'
 #' # Define a sample dictionary for translation
 #' translation_dict <- c(
 #'   "khong_nhieu" = "Not many",
@@ -30,8 +35,8 @@
 #' translated_data <- translate_column(data_column, translation_dict)
 #' print(translated_data)
 #'
-#'
-# Load required package
+#' @name translate_column
+
 library(stringi)
 
 # Define the function
