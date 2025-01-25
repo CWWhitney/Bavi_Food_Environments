@@ -1,6 +1,9 @@
 ---
 title: "Forest access for sustainable food environments in Bavi"
-output: html_document
+output:
+  html_document:
+    toc: true
+    theme: united
 ---
 
 ```{r setup, include=FALSE}
@@ -12,299 +15,27 @@ library(tidyverse)
 
 Here we use Monte Carlo simulations based on expert knowledge. This is a well-established and flexible method for decision modeling. Allowing for use of expert-derived probabilities and variances to estimate outcomes, even when data is sparse. Capture the variability and uncertainty in model inputs. Guide decision-making by identifying likely outcomes and their variability.
 
-## Generalized Function 
+# Generalized Function 
 
-The function simulates outcomes for decision options. The `simulate_outcomes_for_decisions` function is a Monte Carlo simulation framework designed to evaluate multiple decision options against predefined outcomes, incorporating stochastic variability (variability_list) to reflect real-world uncertainties. This function is intended for use in scenarios where decisions have probabilistic impacts on outcomes, such as ecological management, conservation planning, or policy evaluation. Source the  `simulate_outcomes_for_decisions` function with `source`.
-
-```{r source_simulate_outcomes_for_decisions}
-source("functions/simulate_outcomes_for_decisions.R")
+```{r child="Generalized_function.Rmd"}
 ```
 
-### Function Purpose
-
-The function calculates the expected outcomes for a series of decision options under uncertainty. Each decision option is evaluated against a set of outcomes using a weighted linear model, with added random variability_list to account for variability. The outputs are stored in a structured format for further analysis.
-
-Function Inputs include: 
-
-`decision_options`, a list where each element is a named vector representing a specific decision option. Each vector contains binary values (1 or 0), indicating whether a particular decision variable is active or inactive. For example: `control_access = c(1, 0, 0, 0, 0)` indicates that `control_access` is the first option in the list of decision options. 
-
-`outcome_effects`, a matrix where rows represent outcomes (e.g., conservation success, financial cost). The columns correspond to decision variables. The elements specify the weight or influence of a decision variable on a given outcome. i.e. `matrix(c(0.8, 0.6, 0.5, 0.6, 0.7),nrow = 1)` for eh species Conservation outcome_effects corresponding to the columns of `decision_options`. 
-
-The `variability_list` is a named list of functions, with each function generating random noise specific to a specific outcome. This allows for custom noise distributions to reflect expert knowledge or empirical data on variability. i.e. `list(SpeciesConservation = function(n) rnorm(n, mean = 0, sd = 0.05))` is a function assigning the noise to the interaction between species conservation and the decision options. 
-
-`n_simulations` is the number of Monte Carlo iterations to perform for each combination of decision and outcome. 
-
-The function returns `results` as a nested list with: Decision options (e.g., `control_access`). Outcome names (e.g., `SpeciesConservation`). Values: A vector of simulated outcome values for each combination of decision and outcome.
-
-## Simulation Workflow
-
-### Decision Options:
-
-The function iterates over each decision option in `decision_options`. For each decision option, the function calculates all outcomes defined in the `outcome_effects` matrix. Outcomes are calculated as a weighted sum of decision variables (defined by the `outcome_effects` matrix) plus a random variability_list term. `variability_list` is generated, allowing for outcome-specific variability. Results are stored in a nested list, enabling easy access for further analysis.
+# Prior Estimates 
 
 ```{r child = "Prior_estimates.Rmd"}
 ```
 
 # Example Use Case Bidens pilosa
 
-For a conservation project, this function will be used to simulate the effects of different park management strategies (e.g., restricting access, providing seedlings) on:
-
-- Species conservation: Probability of preserving species.
-- Dietary diversity: Impact on local food systems.
-- Expenditure: Financial cost to the park service.
-- Cultural heritage: Loss of traditional knowledge.
-
-By comparing the simulated outcomes for each strategy, decision-makers can identify trade-offs and prioritize actions. The function can handle multiple decision options and outcomes with ease. It incorporates expert-defined variability_list distributions for outcome variability. It also explicitly separates decision logic, outcome effects, and variability_list, ensuring clarity and reproducibility. For each decision option and outcome, the function calculates the **Outcome Value** using the following formula:
-
-\[
-\text{Outcome Value} = \sum_{i=1}^{n} \text{Decision}_i \times \text{Weight}_i + \text{variability_list}
-\]
-
-Where
-
-- \(\text{Decision}_i\): A binary value (\(1\) or \(0\)) indicating if the \(i\)-th decision is active.
-- \(\text{Weight}_i\): The influence of the \(i\)-th decision variable on the outcome.
-- \(\text{variability_list}\): A random term representing variability or uncertainty, specific to the outcome and decision, as defined by the `variability_list`.
-
-```{r forest_access_graph}
-# Load necessary libraries
-library(DiagrammeR)
-library(DiagrammeRsvg)
-library(rsvg)
-
-# Create the updated graph
-forest_access_graph <- grViz("
-  digraph forest_access_model {
-    graph [layout = dot, rankdir = LR]
-
-    // Define node styles
-    node [shape = box, fontname = Helvetica]
-
-    // Define nodes
-    ControlAccess [label = 'Control Access']
-    ProvideAccessControlHarvest [label = 'Provide Access + Control Harvest']
-    AllowAccessForestParts [label = 'Allow Access to Forest Parts']
-    AllowAccessLimitedTime [label = 'Allow Access for Limited Time']
-    ProvideSeedlings [label = 'Provide Seedlings']
-
-    SpeciesConservation [label = 'Species Conservation']
-    DietaryDiversity [label = 'Dietary Diversity']
-    SustainableFoodEnv [label = 'Sustainable Food Environment']
-    ParkExpenditure [label = 'Park Expenditure']
-    TraditionalKnowledge [label = 'Traditional Knowledge']
-
-    // Define relationships between nodes
-    ControlAccess -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
-    ProvideAccessControlHarvest -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
-    AllowAccessForestParts -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
-    AllowAccessLimitedTime -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
-    ProvideSeedlings -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}
-  }
-")
-
-forest_access_graph
+```{r child="Bidens_Pilosa.Rmd"}
 ```
 
 # Decision model 
 
-Create a `decision_options` vector with all the decision options for the park and communities surrounding the park. 
-
-```{r decision_options_list}
-# Define all decision options (each as a named vector)
-decision_options_list <- list(
-  control_access = c(1, 0, 0, 0, 0),
-  provide_access_control_harvest = c(0, 1, 0, 0, 0),
-  allow_access_forest_parts = c(0, 0, 1, 0, 0),
-  allow_access_limited_time = c(0, 0, 0, 1, 0),
-  provide_seedlings = c(0, 0, 0, 0, 1)
-)
-```
-
-### Define `outcome_effects` matrix for outcomes for decisions and outcomes.
-
-```{r outcome_effects}
-# outcome_effects (rows: outcomes, cols: decisions)
-outcome_effects <- matrix(
-  c(
-    #control_access, provide_access_control_harvest, allow_access_forest_parts, allow_access_limited_time, provide_seedlings
-    # Species Conservation outcome_effects
-    0.8, 0.6, 0.5, 0.6, 0.7,
-    # Dietary Diversity outcome_effects
-    -0.6, 0.5, 0.6, 0.6, 0.7,
-    # Sustainable Food Environment outcome_effects
-    -0.4, 0.6, 0.7, 0.8, 0.9,
-    # Park Expenditure outcome_effects
-    0.9, 0.4, 0.3, 0.3, 0.8,
-    # Traditional Knowledge outcome_effects
-    -0.9, 0.7, 0.6, 0.5, 0.4
-  ),
-  nrow = 5, byrow = TRUE,
-  dimnames = list(
-    c("SpeciesConservation", "DietaryDiversity", "SustainableFoodEnv", "ParkExpenditure", "TraditionalKnowledge"),
-    c("control_access", "provide_access_control_harvest", "allow_access_forest_parts", "allow_access_limited_time", "provide_seedlings")
-  )
-)
-```
-
-#### Define a `variability_list` for each outcome.
-
-```{r variability_list}
-variability_list <- list(
-  SpeciesConservation = function(n) 
-    rnorm(n, mean = 0, sd = 0.05),  # Low uncertainty
-  DietaryDiversity = function(n) 
-    rnorm(n, mean = 0, sd = 0.1),     # Moderate uncertainty
-  SustainableFoodEnv = function(n) 
-    rnorm(n, mean = 0, sd = 0.08),  # Moderate uncertainty
-  ParkExpenditure = function(n) 
-    rnorm(n, mean = 0, sd = 0.2),      # High uncertainty
-  TraditionalKnowledge = function(n) 
-    rnorm(n, mean = 0, sd = 0.15)  # Moderate-high uncertainty
-)
-```
-
-#### Run the simulation with the `variability_list`. 
-
-```{r results}
-results <- simulate_outcomes_for_decisions(decision_options_list, outcome_effects, variability_list)
-```
-
-```{r control_conservation}
-# Example: Access results for a specific decision and outcome
-head(results$control_access$SpeciesConservation)  # "Control Access" and "Species Conservation"
-```
-
-```{r seedlings_diets}
-# Example: Access results for a different decision and outcome
-head(results$provide_seedlings$DietaryDiversity)  # "Provide Seedlings" and "Dietary Diversity"
-```
-
-#### Check for outcome effects
-
-```{r outcome_effects-bidens_pilosa}
-species_data$bidens_pilosa$outcome_effects
-```
-
-Test with 5 random noise values for the `SpeciesConservation` outcome, based on the standard deviation (sd) defined in `species_params`.
-
-```{r SpeciesConservation_5}
-# Test the Variability Function
-species_data$bidens_pilosa$variability_list$SpeciesConservation(5)
-```
-
-Use the simulate_outcomes_for_decisions function with the processed data for `species_a` to simulate outcomes.
-
-```{r simulations_bidens_pilosa}
-source("functions/simulate_outcomes_for_decisions.R")
-simulations_bidens_pilosa <- simulate_outcomes_for_decisions(
-  decision_options = decision_options_list, #defined above
-  outcome_effects = species_data$bidens_pilosa$outcome_effects,
-  variability_list = species_data$bidens_pilosa$variability_list
-)
-```
-
-We also reverse the expenses, since higher expenses are worse, they should appear as a negative result in the plot. 
-
-```{r data_mgmt}
-# Prepare the data
-source("functions/prepare_heatmap_data.R")
-heatmap_data <- prepare_heatmap_data(simulations_bidens_pilosa)
-
-# Flatten simulations_b_pilosa into a data frame
-source("functions/flatten_results.R")
-# Flatten simulations_b_pilosa
-heatmap_data <- flatten_results(simulations_bidens_pilosa, species_data$bidens_pilosa$variability_list)
-
-# reverse the expenses
-heatmap_data <- heatmap_data %>%
-  mutate(
-    MeanValue = ifelse(Outcome == "ParkExpenditure", -MeanValue, MeanValue)
-  )
-
-```
-
-### Plot a heatmap 
-
-```{r plot_bubble_heatmap}
-source("functions/plot_bubble_heatmap.R")
-plot_bubble_heatmap(heatmap_data, title = "Bubble Plot for Bidens pilosa")
-```
-
-### Plot an aggregated plot
-
-```{r aggregated plot}
-# Function to aggregate effects and variability across species
-aggregate_species_data <- function(species_files) {
-  aggregated_data <- data.frame()
-  
-  for (species_name in names(species_files)) {
-    source(species_files[[species_name]])  # Load effects_sd_map for the species
-    effects_sd_map <- get(paste0("effects_sd_map_", species_name))
-    
-    for (outcome in names(effects_sd_map)) {
-      for (decision in names(effects_sd_map[[outcome]])) {
-        effect <- effects_sd_map[[outcome]][[decision]]$Effect
-        sd <- effects_sd_map[[outcome]][[decision]]$SD
-        
-        aggregated_data <- rbind(
-          aggregated_data,
-          data.frame(
-            Species = species_name,
-            Outcome = outcome,
-            Decision = decision,
-            Effect = effect,
-            SD = sd
-          )
-        )
-      }
-    }
-  }
-  
-  return(aggregated_data)
-}
-
-# Aggregate data across all species
-aggregated_data <- aggregate_species_data(species_files)
-
-# Summarize aggregated data
-summary_data <- aggregated_data %>%
-  group_by(Decision, Outcome) %>%
-  summarize(
-    MeanEffect = mean(Effect, na.rm = TRUE),
-    MeanSD = mean(SD, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-
-library(ggplot2)
-
-# Function to plot aggregate effects
-plot_aggregate_effects <- function(data, title = "Aggregate Effects Across Species") {
-  ggplot(data, aes(x = Decision, y = Outcome, size = 1 / MeanSD, fill = MeanEffect)) +
-    geom_point(shape = 21, color = "black", alpha = 0.7) +
-    scale_fill_gradient2(low = "red", mid = "white", high = "green", midpoint = 0) +
-    scale_size_continuous(name = "Confidence (1/SD)", range = c(2, 10)) +
-    labs(
-      title = title,
-      x = "Decision Options",
-      y = "Outcomes",
-      fill = "Mean Effect"
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      legend.position = "right"
-    )
-}
-
-# Plot the data
-plot_aggregate_effects(summary_data)
-
+```{r child = "Decision_model.Rmd"}
 ```
 
 # Update based on field observations
 
 ```{r child = "Update.Rmd"}
 ```
-
-

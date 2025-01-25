@@ -1,0 +1,27 @@
+The function simulates outcomes for decision options. The `simulate_outcomes_for_decisions` function is a Monte Carlo simulation framework designed to evaluate multiple decision options against predefined outcomes, incorporating stochastic variability (variability_list) to reflect real-world uncertainties. This function is intended for use in scenarios where decisions have probabilistic impacts on outcomes, such as ecological management, conservation planning, or policy evaluation. Source the  `simulate_outcomes_for_decisions` function with `source`.
+
+```{r source_simulate_outcomes_for_decisions}
+source("functions/simulate_outcomes_for_decisions.R")
+```
+
+### Function Purpose
+
+The function calculates the expected outcomes for a series of decision options under uncertainty. Each decision option is evaluated against a set of outcomes using a weighted linear model, with added random variability_list to account for variability. The outputs are stored in a structured format for further analysis.
+
+Function Inputs include: 
+
+`decision_options`, a list where each element is a named vector representing a specific decision option. Each vector contains binary values (1 or 0), indicating whether a particular decision variable is active or inactive. For example: `control_access = c(1, 0, 0, 0, 0)` indicates that `control_access` is the first option in the list of decision options. 
+
+`outcome_effects`, a matrix where rows represent outcomes (e.g., conservation success, financial cost). The columns correspond to decision variables. The elements specify the weight or influence of a decision variable on a given outcome. i.e. `matrix(c(0.8, 0.6, 0.5, 0.6, 0.7),nrow = 1)` for eh species Conservation outcome_effects corresponding to the columns of `decision_options`. 
+
+The `variability_list` is a named list of functions, with each function generating random noise specific to a specific outcome. This allows for custom noise distributions to reflect expert knowledge or empirical data on variability. i.e. `list(SpeciesConservation = function(n) rnorm(n, mean = 0, sd = 0.05))` is a function assigning the noise to the interaction between species conservation and the decision options. 
+
+`n_simulations` is the number of Monte Carlo iterations to perform for each combination of decision and outcome. 
+
+The function returns `results` as a nested list with: Decision options (e.g., `control_access`). Outcome names (e.g., `SpeciesConservation`). Values: A vector of simulated outcome values for each combination of decision and outcome.
+
+## Simulation Workflow
+
+### Decision Options:
+
+The function iterates over each decision option in `decision_options`. For each decision option, the function calculates all outcomes defined in the `outcome_effects` matrix. Outcomes are calculated as a weighted sum of decision variables (defined by the `outcome_effects` matrix) plus a random variability_list term. `variability_list` is generated, allowing for outcome-specific variability. Results are stored in a nested list, enabling easy access for further analysis.
