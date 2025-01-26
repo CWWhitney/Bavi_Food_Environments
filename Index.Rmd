@@ -25,17 +25,12 @@ Here we use Monte Carlo simulations based on expert knowledge. This is a well-es
 ```{r child = "B_Prior_estimates.Rmd"}
 ```
 
-# Decision model {#decision_model}
-
-```{r child = "C_Decision_model.Rmd"}
-```
-
 # Update based on field observations {#update_model}
 
-```{r child = "D_Update.Rmd"}
+```{r child = "C_Update.Rmd"}
 ```
 
 # Generalize the update to all species in the collection (from all trips)
 
-```{r child = "E_Update_all_species.Rmd"}
+```{r child = "D_Update_all_species.Rmd"}
 ```
