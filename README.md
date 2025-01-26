@@ -10,3 +10,7 @@ General model expressing the relationships covered in the model
 
 Aggregate outcomes of an updated Monte Carlo (several rounds of input from local experts)
 
+
+Read the whole story here 
+
+https://htmlpreview.github.io/?https://github.com/CWWhitney/Bavi_Food_Environments/main/Index.html
