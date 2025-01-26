@@ -1,0 +1,241 @@
+
+## Add species with simplified prior input
+
+Use the `add_species_data.R` function with other functions from the `tidyverse`
+
+```{r species_params}
+source("functions/add_species_data.R")
+library(tidyverse)
+```
+
+The `Effect` represents the magnitude and direction of influence that a specific decision option has on an outcome for a given species. Positive values indicate a beneficial effect and negative values visa versa. For instance, a value of 0.8 for `control_access` on `Species Conservation` implies a strong positive effect, whereas -0.2 for `provide_seedlings` on `Dietary Diversity` indicates a slight reduction in dietary diversity. A value of 0 means no effect. 
+
+The SD (also `Variability_SD`) quantifies the uncertainty or variability in the effect values. A smaller SD (e.g., 0.05) indicates high confidence in `Effect`, suggesting that the impact is consistent across scenarios. Larger SD (e.g., 0.2) reflects greater uncertainty, for example, an SD of 0.05 for `control_access` on `Species Conservation` indicates low variability and high confidence, whereas an SD of 0.15 for `provide_seedlings` on `Dietary Diversity` denotes moderate uncertainty. 
+
+## Decision options for sustainable forest food
+
+Define `decision_options` for managing forest access (limited time, area or volume of harvest) or species access (seedlings provided)
+
+```{r define_options_outcomes}
+# Define decision options and outcomes
+decision_options <- c("control_access", "provide_access_control_harvest", 
+                      "allow_access_forest_parts", "allow_access_limited_time", "provide_seedlings")
+
+```
+
+## Outcomes of sustainable forest food decisions
+
+Define decision `outcomes` for diets and conservation
+
+```{r show_outcomes}
+outcomes <- c("SpeciesConservation", "DietaryDiversity", "SustainableFoodEnv", 
+              "ParkExpenditure", "TraditionalKnowledge")
+```
+
+## Species list
+
+Create `species_files` a list of species and their corresponding `.R` files from all field visits. `species_files` is used for updating in the section Update based on field observations @update_model
+
+```{r species_files_prior}
+# List of species and their corresponding `.R` files
+species_files <- list(
+  # === One very common species 
+  bidens_pilosa = "data/effects_sd_map_bidens_pilosa.R",               
+  # Bidens pilosa
+  
+  # === Learning in early 2024
+  
+  amomum_villosum = "data/effects_sd_map_amomum_villosum.R",           
+  # Amomum villosum
+  begonia = "data/effects_sd_map_begonia.R",                 
+  # Begonia
+  bischofia_javanica = "data/effects_sd_map_bischofia_javanica.R",    
+  # Bischofia javanica Blum
+  cheilocostus_speciosus = "data/effects_sd_map_cheilocostus_speciosus.R", 
+  # Cheilocostus speciosus
+  cyclosorus_acuminatus = "data/effects_sd_map_cyclosorus_acuminatus.R",
+  # Cyclosorus acuminatus (Houtt)
+  erythropalum_scandens = "data/effects_sd_map_erythropalum_scandens.R", 
+  # Erythropalum scandens Blume
+  ficus_auriculata = "data/effects_sd_map_ficus_auriculata.R", 
+  # Ficus auriculata
+  ficus_callosa = "data/effects_sd_map_ficus_callosa.R",     
+  # Ficus callosa Willd.
+  gynura_procumbens = "data/effects_sd_map_gynura_procumbens.R",        
+  # Gynura procumbens (Lour.)
+  melientha_suavis = "data/effects_sd_map_melientha_suavis.R",      
+  # Melientha suavis
+  musa_brachycarpa = "data/effects_sd_map_musa_brachycarpa.R",           
+  # Musa brachycarpa Back
+  ophiopogon_reptans = "data/effects_sd_map_ophiopogon_reptans.R",   
+  # Ophiopogon reptans
+  rubus_cochinchinensis = "data/effects_sd_map_rubus_cochinchinensis.R",     
+  # Rubus cochinchinensis
+  saurauia_tristyla = "data/effects_sd_map_saurauia_tristyla.R",      
+  # Saurauia tristyla DC.
+  schefflera_heptaphylla = "data/effects_sd_map_schefflera_heptaphylla.R", 
+  # Schefflera heptaphylla
+  sterculia_foetida = "data/effects_sd_map_sterculia_foetida.R",     
+  # Sterculia foetida L.
+  tetrapanax_papyriferus = "data/effects_sd_map_tetrapanax_papyriferus.R", 
+  # Tetrapanax papyriferus
+  tradescantia_pallida = "data/effects_sd_map_tradescantia_pallida.R", 
+  # Tradescantia pallida
+    clerodendrum_cyrtophyllum = "data/effects_sd_map_clerodendrum_cyrtophyllum.R", 
+  
+  # === From later visits Oct 2024
+  
+  # Clerodendrum cyrtophyllum
+  crassocephalum_crepidioides = "data/effects_sd_map_crassocephalum_crepidioides.R", 
+  # Crassocephalum crepidioides
+  centella_asiatica = "data/effects_sd_map_centella_asiatica.R", 
+  # Centella asiatica
+  dioscorea_hamiltonii = "data/effects_sd_map_dioscorea_hamiltonii.R", 
+  # Dioscorea hamiltonii
+  artemisia_vulgaris = "data/effects_sd_map_artemisia_vulgaris.R", 
+  # Artemisia vulgaris
+  
+  # === From later visits after Jan 2025
+  
+  gynura_sarmentosa = "data/effects_sd_map_gynura_sarmentosa.R", 
+  # Gynura sarmentosa
+  euodia_bodinieri = "data/effects_sd_map_euodia_bodinieri.R", 
+  # Euodia bodinieri
+  nephelium_lappaceum = "data/effects_sd_map_nephelium_lappaceum.R", 
+  # Nephelium lappaceum
+  hodgsonia_macrocarpa = "data/effects_sd_map_hodgsonia_macrocarpa.R", 
+  # Hodgsonia macrocarpa
+  baccaurea_ramiflora = "data/effects_sd_map_baccaurea_ramiflora.R", 
+  # Baccaurea ramiflora
+  cissus_hastata = "data/effects_sd_map_cissus_hastata.R", 
+  # Cissus hastata
+  maesa_perlarius = "data/effects_sd_map_maesa_perlarius.R", 
+  # Maesa perlarius
+  nephrolepis_cordifolia = "data/effects_sd_map_nephrolepis_cordifolia.R", 
+  # Nephrolepis cordifolia
+  piper_lolot = "data/effects_sd_map_piper_lolot.R", 
+  # Piper lolot
+  passiflora_foetida = "data/effects_sd_map_passiflora_foetida.R", 
+  # Passiflora foetida
+  plantago_major = "data/effects_sd_map_plantago_major.R", 
+  # Plantago major
+  zanthoxylum_rhetsa = "data/effects_sd_map_zanthoxylum_rhetsa.R", 
+  # Zanthoxylum rhetsa
+  costus_speciosus = "data/effects_sd_map_costus_speciosus.R", 
+  # Costus speciosus
+  clerodendrum_chinense = "data/effects_sd_map_clerodendrum_chinense.R", 
+  # Clerodendrum chinense
+  paederia_lanuginosa = "data/effects_sd_map_paederia_lanuginosa.R", 
+  # Paederia lanuginosa
+  clausena_indica = "data/effects_sd_map_clausena_indica.R", 
+  # Clausena indica
+  auricularia_heimuer = "data/effects_sd_map_auricularia_heimuer.R", 
+  # Auricularia heimuer
+  volvariella_volvacea = "data/effects_sd_map_volvariella_volvacea.R", 
+  # Volvariella volvacea
+  oroxylum_indicum = "data/effects_sd_map_oroxylum_indicum.R", 
+  # Oroxylum indicum
+  clerodendrum_quadriloculare = "data/effects_sd_map_clerodendrum_quadriloculare.R", 
+  # Clerodendrum quadriloculare
+  peperomia_pellucida = "data/effects_sd_map_peperomia_pellucida.R", 
+  # Peperomia pellucida
+  diplazium_esculentum = "data/effects_sd_map_diplazium_esculentum.R", 
+  # Diplazium esculentum
+  alpinia_xanthioides = "data/effects_sd_map_alpinia_xanthioides.R", 
+  # Alpinia xanthioides
+  curculigo_orchioides = "data/effects_sd_map_curculigo_orchioides.R", 
+  # Curculigo orchioides
+  ficus_racemosa = "data/effects_sd_map_ficus_racemosa.R", 
+  # Ficus racemosa
+  physalis_angulata = "data/effects_sd_map_physalis_angulata.R", 
+  # Physalis angulata
+  polygonum_perfoliatum = "data/effects_sd_map_polygonum_perfoliatum.R", 
+  # Polygonum perfoliatum
+  begonia_tonkinensis = "data/effects_sd_map_begonia_tonkinensis.R", 
+  # Begonia tonkinensis
+  begonia_aptera = "data/effects_sd_map_begonia_aptera.R", 
+  # Begonia aptera
+  canarium_bengalense = "data/effects_sd_map_canarium_bengalense.R", 
+  # Canarium bengalense
+  canarium_nigrum = "data/effects_sd_map_canarium_nigrum.R", 
+  # Canarium nigrum
+  canarium_tramvangum = "data/effects_sd_map_canarium_tramvangum.R", 
+  # Canarium tramvangum
+  ficus_heterophyllus = "data/effects_sd_map_ficus_heterophyllus.R", 
+  # Ficus heterophyllus
+  wedelia_trilobata = "data/effects_sd_map_wedelia_trilobata.R", 
+  # Wedelia trilobata
+  coix_lacryma_jobi = "data/effects_sd_map_coix_lacryma_jobi.R", 
+  # Coix lacryma-jobi
+  arundinaria_baviensis = "data/effects_sd_map_arundinaria_baviensis.R", 
+  # Arundinaria baviensis
+  ampelocalamus_patellaris = "data/effects_sd_map_ampelocalamus_patellaris.R", 
+  # Ampelocalamus patellaris
+  bambusa_blumeana = "data/effects_sd_map_bambusa_blumeana.R", 
+  # Bambusa blumeana
+  dendrocalamus_velutinus = "data/effects_sd_map_dendrocalamus_velutinus.R", 
+  # Dendrocalamus velutinus
+  momordica_cochinchinensis = "data/effects_sd_map_momordica_cochinchinensis.R", 
+  # Momordica cochinchinensis
+  clerodendrum_kaempferi = "data/effects_sd_map_clerodendrum_kaempferi.R", 
+  # Clerodendrum kaempferi
+  clerodendrum_philippinum = "data/effects_sd_map_clerodendrum_philippinum.R" 
+  # Clerodendrum philippinum
+)
+
+```
+
+## Create `species_data` for the Decision Model @decision_model section 
+
+As a last step we apply the `add_species_data.R` function to add default prior species data to our existing datasets (where missing, which is not usually the case). 
+
+```{r add_species_data}
+source("functions/add_species_data.R")
+
+```
+
+Start with an empty file
+
+```{r start_species_data}
+# Initialize an empty dataset
+species_data <- data.frame()
+```
+
+Apply `add_species_data` to add default values where any are missing.
+
+```{r loop_through_species_files}
+
+# Loop through species and add their data
+for (species in names(species_files)) {
+  species_data <- add_species_data(
+    existing_data = species_data,
+    species_name = species,
+    decision_options = decision_options,
+    outcomes = outcomes,
+    species_file_path = species_files[[species]]
+  )
+}
+
+```
+
+###  Load the built data and change format (for reading)
+
+```{r load_built_data}
+species_params <- as.data.frame(species_data)
+#change to numeric
+species_params$Effect <- as.numeric(species_params$Effect)
+species_params$Variability_SD <- as.numeric(species_params$Variability_SD)
+```
+
+### Clean the species level data (update botanical names). 
+
+```{r tolower}
+species_params$Species <- tolower(trimws(species_params$Species))
+```
+
+<!-- ### Construct the species_data object for each species based on `species_params`. -->
+
+<!-- ```{r} -->
+<!-- source("functions/generate_species_data.R") -->
+<!-- species_data <- generate_species_data(species_params) -->
+<!-- ``` -->
