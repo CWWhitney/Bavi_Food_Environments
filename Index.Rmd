@@ -7,35 +7,35 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE)
 library(ggplot2)
 library(reshape2)
 library(tidyverse)
 ```
 
-Here we use Monte Carlo simulations based on expert knowledge. This is a well-established and flexible method for decision modeling. Allowing for use of expert-derived probabilities and variances to estimate outcomes, even when data is sparse. Capture the variability and uncertainty in model inputs. Guide decision-making by identifying likely outcomes and their variability.
+Here we use Monte Carlo simulations based on expert knowledge. This is a well-established and flexible method for decision modeling. Allowing for use of expert-derived probabilities and variances to estimate outcomes, even when data is sparse. With this method we can capture the variability and uncertainty in model inputs. We can apply this to guide decision-making by identifying likely outcomes and their variability.
 
 # Generalized Function 
 
-```{r child="Generalized_function.Rmd"}
+```{r child="A_Generalized_function.Rmd"}
 ```
 
 # Prior Estimates 
 
-```{r child = "Prior_estimates.Rmd"}
+```{r child = "B_Prior_estimates.Rmd"}
 ```
 
-# Example Use Case Bidens pilosa
+# Decision model {#decision_model}
 
-```{r child="Bidens_Pilosa.Rmd"}
+```{r child = "C_Decision_model.Rmd"}
 ```
 
-# Decision model 
+# Update based on field observations {#update_model}
 
-```{r child = "Decision_model.Rmd"}
+```{r child = "D_Update.Rmd"}
 ```
 
-# Update based on field observations
+# Generalize the update to all species in the collection (from all trips)
 
-```{r child = "Update.Rmd"}
+```{r child = "E_Update_all_species.Rmd"}
 ```
