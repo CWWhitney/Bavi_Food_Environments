@@ -83,3 +83,4 @@ forest_access_graph <- grViz("
 
 forest_access_graph
 ```
+In this model ParkExpenditure refers to the additional costs incurred (or saved) by implementing food access strategies, more is worse. All other values are positive, more is better.

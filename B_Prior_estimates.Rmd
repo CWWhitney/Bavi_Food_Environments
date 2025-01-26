@@ -21,6 +21,15 @@ Define `decision_options` for managing forest access (limited time, area or volu
 decision_options <- c("control_access", "provide_access_control_harvest", 
                       "allow_access_forest_parts", "allow_access_limited_time", "provide_seedlings")
 
+# Define readable labels
+decision_labels <- c(
+  "control_access" = "Control Access",
+  "provide_access_control_harvest" = "Regulated Harvesting",
+  "allow_access_forest_parts" = "Forest Access",
+  "allow_access_limited_time" = "Limited Access",
+  "provide_seedlings" = "Seedling Provision"
+)
+
 ```
 
 ## Outcomes of sustainable forest food decisions
@@ -30,6 +39,15 @@ Define decision `outcomes` for diets and conservation
 ```{r show_outcomes}
 outcomes <- c("SpeciesConservation", "DietaryDiversity", "SustainableFoodEnv", 
               "ParkExpenditure", "TraditionalKnowledge")
+
+outcome_labels <- c(
+  "SpeciesConservation" = "Species Conservation",
+  "DietaryDiversity" = "Dietary Diversity",
+  "SustainableFoodEnv" = "Sustainable Food Environment",
+  "ParkExpenditure" = "Park Expenditure",
+  "TraditionalKnowledge" = "Traditional Knowledge"
+)
+
 ```
 
 ## Species list
@@ -185,7 +203,7 @@ species_files <- list(
 
 ```
 
-## Create `species_data` for the Decision Model @decision_model section 
+## Create `species_data` 
 
 As a last step we apply the `add_species_data.R` function to add default prior species data to our existing datasets (where missing, which is not usually the case). 
 
@@ -233,9 +251,32 @@ species_params$Variability_SD <- as.numeric(species_params$Variability_SD)
 species_params$Species <- tolower(trimws(species_params$Species))
 ```
 
-<!-- ### Construct the species_data object for each species based on `species_params`. -->
+Reverse the expenses, since higher expenses are worse, they should appear as a negative result in the plot. 
 
-<!-- ```{r} -->
-<!-- source("functions/generate_species_data.R") -->
-<!-- species_data <- generate_species_data(species_params) -->
-<!-- ``` -->
+### Plot an aggregated plot with `aggregate_species_data`
+
+```{r aggregate_plot}
+source("functions/aggregate_species_data.R")
+# Aggregate data across all species
+aggregated_data <- aggregate_species_data(species_files)
+
+# Summarize aggregated data
+summary_data <- aggregated_data %>%
+  group_by(Decision, Outcome) %>%
+  summarize(
+    MeanEffect = mean(Effect, na.rm = TRUE),
+    MeanSD = mean(SD, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+```
+
+Apply `plot_aggregate_effects`
+
+```{r plot_aggregate_effects}
+library(ggplot2)
+source("functions/plot_aggregate_effects.R")
+# Plot the data
+plot_aggregate_effects(summary_data)
+
+```

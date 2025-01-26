@@ -1,0 +1,158 @@
+
+
+```{r libraries_update}
+library(ggplot2)
+library(reshape2)
+library(tidyverse)
+```
+
+# Working with data from Bavi
+
+Collected over several visits with elders and local forest food experts, chefs, teachers, youth and other villagers. 
+
+```{r observed_data}
+# Observed data
+data <- read.csv("data/observation_data_bavi.csv")
+```
+
+The data is in Vietnamese so we translate it to English. 
+
+```{r translate_names}
+# translate names(data)
+
+data_names <- c(
+  "Family.plant", "Scientific.name", "Scientific.name.Yen.Hoai.edit",
+  "Local.name", "Common.name", "Local.name...Dao.language.", "Habitat",
+  "Lifeform", "Uses.To.cure.what.", "Value", "Parts used", "Usage", "Frequency
+  of use" , "Number of users" , "Current reserves" , "Harvest sources" ,
+  "Cultivation techniques" , "Market supply potential" , "Discovery of
+  processed dishes" , "Nutritional value"
+)
+
+# Convert to snake_case (replace spaces and dots with underscores, make lowercase)
+cleaned_names <- gsub("[ .]+", "_", tolower(data_names))
+# Assign cleaned column names directly to the data frame
+names(data) <- cleaned_names
+```
+
+### Extract relevant information from the data
+
+Look for all the words to be translated with `unique(data$current_reserves)`. Add them to the dictionary in `dictionaries.R` and translate with `translate_column`.
+
+```{r define_dictionary}
+# Source dictionary
+source("functions/dictionaries.R")
+# function to translate the column
+source("functions/translate_column.R")
+```
+
+If `current_reserves` is `Few` or `Not many` (species is rare) we can expect positive `SpeciesConservation` effects with more restrictions. `control_access` and `provide_seedlings` will have a higher effect with lower SD, all the other options will likely be reduced. The effect would be similar for `SustainableFoodEnv`. `DietaryDiversity` would not be likely to change much. `ParkExpenditure` might also go up with more control. `TraditionalKnowledge` would likely not change much  since it is already a rare plant. If `current_reserves` are `Many` then the effects will be the opposite. 
+
+```{r translate_current_reserves}
+data$current_reserves <- translate_column(data$current_reserves, translation_dict2)
+```
+
+## Updating with parts_used data
+
+If `parts_used` are roots, stems or whole plants then we can translate this as `destructive` and all other uses as `non_destructive`. The former type of use is more likely to have a negative `SpeciesConservation` effect with more access allowed and will shift the result.  
+
+```{r translate_parts_used}
+data$parts_used <- translate_column(data$parts_used, translation_dict3)
+  # destructive_harvest <- any(data$scientific_name_snake_case == species_name & data$parts_used == "destructive")
+```
+
+If `nutritional_value` is high then the effects on `DietaryDiversity` will be raised. If `Low` effects on `DietaryDiversity` will be lowered. 
+
+```{r translate_nutritional_value}
+translate_column(data$nutritional_value, translation_dict2)
+
+```
+
+If `number_of_users` is `Many` then `TraditionalKnowledge` Effect would be lower and SD would be narrower for `control_access`. If it is `Few` then `DietaryDiversity` effects will be lower. 
+
+```{r translate_number_of_users}
+translate_column(data$number_of_users, translation_dict2)
+
+```
+
+Additional functions to clean the scientific names (these are very fiddly in the rest of the steps).
+
+```{r clean_name_scientific_names}
+
+  data$scientific_name <- as.character(data$scientific_name)
+  
+  # Function to clean and convert to snake_case
+  clean_name <- function(name) {
+    name <- trimws(name)  # Remove leading/trailing spaces
+    name <- tolower(name)  # Convert to lowercase
+    name <- gsub("[ .-]+", "_", name)  # Replace spaces and dots with underscores
+    return(name)
+  }
+  
+  # Apply function to all names
+  data$scientific_name_snake_case <- sapply(data$scientific_name, clean_name, USE.NAMES = FALSE)
+  
+data$scientific_name_snake_case <- stringr::str_trim(data$scientific_name_snake_case)
+
+```
+
+# Bayesian Updating
+
+Use `Normal-Gaussian conjugate updating` for means and standard deviations.
+Here we use `tidyverse` `dplyr` and `purrr` for clean data transformations.
+The `Effects` and `SDs` are adjusted based on species-specific conditions. The `update_effects_bayesian` function assumes the prior effect is normally distributed. It incorporates new information (condition-based adjustments) using a weighted update. `map()` from `purrr` updates all the expected effects from the observations in four ways: 
+- High/Low Nutrition: Modifies effect and SD accordingly.
+- User Count Impact: Adjusts effect size and uncertainty.
+- This Bayesian approach dynamically integrates observed data into effect estimation while preserving uncertainty, ensuring a structured update.
+
+```{r considerations_for_updating}
+
+  # Check conditions based on the observed data
+
+species_name = "bidens_pilosa"
+rare_species <- any(data$scientific_name_snake_case == species_name &data$current_reserves == "Few")
+rare_species <- any(data$scientific_name_snake_case == species_name &data$current_reserves == "Not many")
+# If `current_reserves` is `Few` or `Not many` (species is rare) we can expect positive `SpeciesConservation` effects with more restrictions. `control_access` and `provide_seedlings` will have a higher effect with lower SD, all the other options will likely be reduced. The effect would be similar for `SustainableFoodEnv`. `DietaryDiversity` would not be likely to change much. `ParkExpenditure` might also go up with more control. `TraditionalKnowledge` would likely not change much  since it is already a rare plant.
+common_species <- any(data$scientific_name_snake_case == species_name &data$current_reserves == "Many")
+# If `current_reserves` are `Many` then the effects will be the opposite.
+  destructive_harvest <- any(data$scientific_name_snake_case == species_name & data$parts_used == "destructive")
+  # If `parts_used` are roots, stems or whole plants then we can translate this as `destructive` and all other uses as `non_destructive`. The former type of use is more likely to have a negative `SpeciesConservation` effect with more access allowed and will shift the result.
+  high_nutrition <- any(data$scientific_name_snake_case == species_name & data$nutritional_value == "High")
+  # If `nutritional_value` is high then the effects on `DietaryDiversity` will be raised.
+  low_nutrition <- any(data$scientific_name_snake_case == species_name & data$nutritional_value == "Low")
+  # If nutritional_value is `Low` effects on `DietaryDiversity` will be lowered.
+  high_number_of_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Many")
+  # If `number_of_users` is `Many` then `TraditionalKnowledge` Effect would be lower and SD would be narrower for `control_access`.
+  few_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Few")
+  # If number_of_users is `Few` then `DietaryDiversity` effects will be lower.
+```
+
+## Check for species consistency
+
+Check that the species names in the prior data `species_files` and the new cleaned species names in the `data` column `scientific_name_snake_case` have the same names. Check which are different and justify the missing from each list. 
+
+```{r check_missing_priors, echo = FALSE, message=TRUE}
+# Extract species names from original prior data species_files list
+species_files_list <- names(species_files)
+
+# Extract unique species names from the data from the field
+species_data_list <- unique(data$scientific_name_snake_case)
+```
+
+### Species not included in first rounds
+
+```{r present_in_prior_not_obs}
+# Find species missing in prior species_files but present in observation data
+setdiff(species_data_list, species_files_list)
+```
+
+Missing species in `species_files` (present in `data` but not in `species_files`) are plants that are common but not really relevant for the question of access to forest species and so are not included in the assessment. 
+
+### Species not included in later rounds
+
+```{r present_obs_not_prior}
+# Find extra species in prior species_files but not in observation data
+setdiff(species_files_list, species_data_list)
+```
+
+Extra species in `species_files` (present in `species_files` but not in `data`) are plants that we recognized a food use for early on in field explorations but did not learn any more about them in later visits. 
