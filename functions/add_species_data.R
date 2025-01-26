@@ -1,4 +1,4 @@
-#' Add Species Data to an Existing Dataset
+#' Add Default Prior Species Data to an Existing Dataset (where missing)
 #'
 #' This function adds species-specific data to an existing dataset by creating a grid of
 #' decision options and outcomes for a given species. If a species-specific effects file
@@ -15,33 +15,6 @@
 #' @param default_sd Numeric. The default standard deviation for variability in outcome effects if no species-specific data is found. Default is `0.1`.
 #'
 #' @return A data frame containing the updated species data, including effect sizes and variability.
-#'
-#' @examples
-#' # Example existing dataset
-#' existing_data <- data.frame(
-#'   Species = c("Panthera leo"),
-#'   Outcome = c("Population"),
-#'   Decision.Option = c("Protection"),
-#'   Effect = c(0.8),
-#'   Variability_SD = c(0.1),
-#'   stringsAsFactors = FALSE
-#' )
-#'
-#' # Define new species information
-#' species_name <- "Gorilla beringei"
-#' decision_options <- c("Reintroduction", "Afforestation")
-#' outcomes <- c("Population", "Habitat Loss")
-#'
-#' # Add species data using default effect and SD
-#' updated_data <- add_species_data(existing_data, species_name, decision_options, outcomes)
-#'
-#' # View the updated dataset
-#' print(updated_data)
-#'
-#' # Example with a species-specific effects file
-#' # Suppose `effects_sd_map_gorilla_beringei` exists in "species_data.R"
-#' # updated_data <- add_species_data(existing_data, species_name, decision_options, outcomes,
-#' #                                  species_file_path = "species_data.R")
 
 add_species_data <- function(existing_data, species_name, decision_options, outcomes, 
                              species_file_path = NULL, default_effect = 0, default_sd = 0.1) {
