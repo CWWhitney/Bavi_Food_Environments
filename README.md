@@ -6,7 +6,7 @@ Decision model of supporting sustainable food environments and forest conservati
 
 General model expressing the relationships covered in the model
 
-<img width="686" alt="Screenshot 2025-01-26 at 14 22 37" src="https://github.com/user-attachments/assets/d0602fe8-1cf1-466c-b749-59c4b9f463ec" />
+<img width="744" alt="Screenshot 2025-01-26 at 21 33 39" src="https://github.com/user-attachments/assets/d62df1cc-ada8-4983-8bf6-308a738db5d2" />
 
 Aggregate outcomes of an updated Monte Carlo (several rounds of input from local experts)
 
