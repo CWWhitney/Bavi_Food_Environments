@@ -1,4 +1,9 @@
-effects_sd_map_auricularia_heimuer<- list(
+# Auricularia heimuer (Black Wood Ear Mushroom) 
+# widely cultivated edible and medicinal mushroom
+# China, Indonesia, Malaysia, the Philippines, Thailand, and Vietnam
+# known for its nutritional value and health benefits
+
+effects_sd_map_auricularia_heimuer <- list(
   SpeciesConservation = list(
     control_access = list(Effect = 0.2, SD = 0.02),
     provide_access_control_harvest = list(Effect = 0.15, SD = 0.02),

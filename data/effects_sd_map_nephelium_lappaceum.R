@@ -1,37 +1,42 @@
+# Nephrolepis cordifolia (Family: Nephrolepidaceae) likely mistaken for nephelium_lappaceum
+# Common names: Narrow Sword Fern, Tuberous Sword Fern
+# A widespread fern with edible tubers, often used in traditional medicine.
+# It is valued for erosion control and as an ornamental plant.
+
 effects_sd_map_nephelium_lappaceum <- list(
   SpeciesConservation = list(
-    control_access = list(Effect = 0.2, SD = 0.02),
-    provide_access_control_harvest = list(Effect = 0.15, SD = 0.02),
-    allow_access_forest_parts = list(Effect = 0.1, SD = 0.02),
-    allow_access_limited_time = list(Effect = 0.05, SD = 0.02),
-    provide_seedlings = list(Effect = 0.05, SD = 0.02)
+    control_access = list(Effect = 0.2, SD = 0.02),  # Restricting access protects wild populations.
+    provide_access_control_harvest = list(Effect = 0.15, SD = 0.02),  # Managed harvesting can sustain wild stocks.
+    allow_access_forest_parts = list(Effect = 0.1, SD = 0.02),  # Access supports harvesting but may impact populations.
+    allow_access_limited_time = list(Effect = 0.05, SD = 0.02),  # Time-limited access reduces overharvesting.
+    provide_seedlings = list(Effect = 0.05, SD = 0.02)  # Providing seedlings promotes controlled cultivation.
   ),
   DietaryDiversity = list(
-    control_access = list(Effect = 0.1, SD = 0.05),
-    provide_access_control_harvest = list(Effect = 0.1, SD = 0.05),
-    allow_access_forest_parts = list(Effect = 0.1, SD = 0.05),
-    allow_access_limited_time = list(Effect = 0.1, SD = 0.05),
-    provide_seedlings = list(Effect = 0.1, SD = 0.05)
+    control_access = list(Effect = 0.1, SD = 0.05),  # Restriction reduces access to tubers as a food source.
+    provide_access_control_harvest = list(Effect = 0.1, SD = 0.05),  # Harvesting control can ensure sustainable use.
+    allow_access_forest_parts = list(Effect = 0.1, SD = 0.05),  # Access enables collection for dietary purposes.
+    allow_access_limited_time = list(Effect = 0.1, SD = 0.05),  # Limited access has neutral effects.
+    provide_seedlings = list(Effect = 0.1, SD = 0.05)  # Cultivation may enhance availability in food systems.
   ),
   SustainableFoodEnv = list(
-    control_access = list(Effect = 0.05, SD = 0.03),
-    provide_access_control_harvest = list(Effect = 0.05, SD = 0.03),
-    allow_access_forest_parts = list(Effect = 0.05, SD = 0.03),
-    allow_access_limited_time = list(Effect = 0.05, SD = 0.03),
-    provide_seedlings = list(Effect = 0.05, SD = 0.03)
+    control_access = list(Effect = 0.05, SD = 0.03),  # Restrictions may limit sustainable harvesting.
+    provide_access_control_harvest = list(Effect = 0.05, SD = 0.03),  # Controlled harvesting ensures availability.
+    allow_access_forest_parts = list(Effect = 0.05, SD = 0.03),  # Access may support ecosystem services.
+    allow_access_limited_time = list(Effect = 0.05, SD = 0.03),  # Time-limited access balances sustainability.
+    provide_seedlings = list(Effect = 0.05, SD = 0.03)  # Cultivation can help maintain population sustainability.
   ),
   ParkExpenditure = list(
-    control_access = list(Effect = -0.05, SD = 0.01),  # Negative effect since higher cost is worse
-    provide_access_control_harvest = list(Effect = -0.1, SD = 0.01),
-    allow_access_forest_parts = list(Effect = -0.15, SD = 0.01),
-    allow_access_limited_time = list(Effect = -0.2, SD = 0.01),
-    provide_seedlings = list(Effect = -0.25, SD = 0.01)
+    control_access = list(Effect = -0.05, SD = 0.01),  # Costs increase with enforcement of access restrictions.
+    provide_access_control_harvest = list(Effect = -0.1, SD = 0.01),  # Managed harvest may reduce park expenses.
+    allow_access_forest_parts = list(Effect = -0.15, SD = 0.01),  # Open access may lower costs.
+    allow_access_limited_time = list(Effect = -0.2, SD = 0.01),  # Seasonal access reduces costs further.
+    provide_seedlings = list(Effect = -0.25, SD = 0.01)  # Supporting propagation may require funding.
   ),
   TraditionalKnowledge = list(
-    control_access = list(Effect = 0.05, SD = 0.02),
-    provide_access_control_harvest = list(Effect = 0.1, SD = 0.02),
-    allow_access_forest_parts = list(Effect = 0.15, SD = 0.02),
-    allow_access_limited_time = list(Effect = 0.2, SD = 0.02),
-    provide_seedlings = list(Effect = 0.3, SD = 0.02)
+    control_access = list(Effect = 0.05, SD = 0.02),  # Restrictions may limit cultural use.
+    provide_access_control_harvest = list(Effect = 0.1, SD = 0.02),  # Controlled harvesting aligns with traditional practices.
+    allow_access_forest_parts = list(Effect = 0.15, SD = 0.02),  # Access supports traditional harvesting.
+    allow_access_limited_time = list(Effect = 0.2, SD = 0.02),  # Time-limited access may help balance conservation and use.
+    provide_seedlings = list(Effect = 0.3, SD = 0.02)  # Cultivation aligns with traditional knowledge conservation.
   )
 )

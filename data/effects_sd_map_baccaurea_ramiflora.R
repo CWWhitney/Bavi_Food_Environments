@@ -1,3 +1,6 @@
+# Species: Baccaurea ramiflora (Burmese grape) 
+# Native to Southeast Asia, including Vietnam.
+
 effects_sd_map_baccaurea_ramiflora <- list(
   SpeciesConservation = list(
     control_access = list(Effect = 0.2, SD = 0.02),
@@ -35,4 +38,3 @@ effects_sd_map_baccaurea_ramiflora <- list(
     provide_seedlings = list(Effect = 0.3, SD = 0.02)
   )
 )
-

@@ -1,5 +1,6 @@
-# effects_sd_map_amomum_villosum
-
+# Wurfbainia villosa (Amomum villosum)
+# Common cardamom-like spice
+# not in the second visit
 effects_sd_map_amomum_villosum <- list(
   SpeciesConservation = list(
     control_access = list(Effect = 0.8, SD = 0.05),
