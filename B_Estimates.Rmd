@@ -1,5 +1,5 @@
 
-## Add species with simplified prior input
+## Add species with simplified initial input
 
 Use the `add_species_data.R` function with other functions from the `tidyverse`
 
@@ -8,9 +8,9 @@ source("functions/add_species_data.R")
 library(tidyverse)
 ```
 
-The `Effect` represents the magnitude and direction of influence that a specific decision option has on an outcome for a given species. Positive values indicate a beneficial effect and negative values visa versa. For instance, a value of 0.8 for `control_access` on `Species Conservation` implies a strong positive effect, whereas -0.2 for `provide_seedlings` on `Dietary Diversity` indicates a slight reduction in dietary diversity. A value of 0 means no effect. 
+The `Effect` represents the magnitude and direction of influence that a specific decision option has on an outcome for a given species. Positive values indicate a beneficial effect and negative values visa versa. For instance, a value of 0.8 for `control_access` on `Species Conservation` implies a strong positive effect, whereas -0.2 for `provide_seedlings` on `Dietary Diversity` indicates a slight reduction in dietary diversity. A value of 0 means no effect. The Effect value represents the proportional change in the outcome relative to its current state for a given species. The measure allows for a direct comparison of how different interventions influence species-level outcomes.
 
-The SD (also `Variability_SD`) quantifies the uncertainty or variability in the effect values. A smaller SD (e.g., 0.05) indicates high confidence in `Effect`, suggesting that the impact is consistent across scenarios. Larger SD (e.g., 0.2) reflects greater uncertainty, for example, an SD of 0.05 for `control_access` on `Species Conservation` indicates low variability and high confidence, whereas an SD of 0.15 for `provide_seedlings` on `Dietary Diversity` denotes moderate uncertainty. 
+The SD (also `Variability_SD`) quantifies the uncertainty or variability in the effect values. A smaller SD (e.g., 0.05) indicates high confidence in `Effect`, suggesting that the impact is consistent across scenarios. Larger SD (e.g., 0.2) reflects greater uncertainty, for example, an SD of 0.05 for `control_access` on `Species Conservation` indicates low variability and high confidence, whereas an SD of 0.15 for `provide_seedlings` on `Dietary Diversity` suggests moderate uncertainty. 
 
 ## Decision options for sustainable forest food
 
@@ -50,11 +50,89 @@ outcome_labels <- c(
 
 ```
 
-## Species list
+### Species Classification
+
+Below is the list of species mentioned and observed as useful in the field. The list is organized by functional role of species in conservation, food security. Although we are mainly concerned about forest conservation in protected forests we also include information about the role of the species in agroforestry systems since many of the species are kept in local homegardens by those community members who have access and land.
+
+
+- **Mushrooms**:  
+  - *Auricularia heimuer* (Jelly ear fungus)  
+  - *Volvariella volvacea* (Paddy straw mushroom)  
+
+- **Grasses & Bamboo**:  
+  - *Ampelocalamus patellaris* (Bamboo)  
+  - *Arundinaria baviensis* (Bamboo)  
+  - *Bambusa blumeana* (Thorny bamboo)  
+  - *Coix lacryma-jobi* (Job’s tears, grain)  
+  - *Dendrocalamus velutinus* (Bamboo)  
+
+- **Ferns**:  
+  - *Diplazium esculentum* (Edible fern)  
+  - *Nephrolepis cordifolia* (Sword fern)  
+
+- **Shrubs & Small Trees**:  
+  - *Bischofia javanica* (Bishop wood, tree)  
+  - *Canarium bengalense* (Canarium tree)  
+  - *Canarium nigrum* (Black canarium tree)  
+  - *Canarium tramvangum* (Canarium tree)  
+  - *Euodia bodinieri* (Rutaceae tree/shrub)  
+  - *Maesa perlarius* (Shrub)  
+  - *Schefflera heptaphylla* (Umbrella tree)  
+
+- **Climbers & Vines**:  
+  - *Cissus hastata* (Vine)  
+  - *Erythropalum scandens* (Climber)  
+  - *Hodgsonia macrocarpa* (Climber, liana)  
+  - *Paederia lanuginosa* (Climber)  
+  - *Passiflora foetida* (Passionflower vine)  
+
+- **Herbs & Vegetable Crops**:  
+  - *Alpinia xanthioides* (Ginger family)  
+  - *Begonia aptera* (Begonia, herb)  
+  - *Begonia tonkinensis* (Begonia, herb)  
+  - *Bidens pilosa* (Blackjack, medicinal herb)  
+  - *Centella asiatica* (Gotu kola, medicinal herb)  
+  - *Costus speciosus* (Spiral ginger, herb)  
+  - *Crassocephalum crepidioides* (Edible herb)  
+  - *Curculigo orchioides* (Orchioides, herb)  
+  - *Dioscorea hamiltonii* (Yam, tuber crop)  
+  - *Gynura procumbens* (Longevity spinach, herb)  
+  - *Gynura sarmentosa* (Herb)  
+  - *Melientha suavis* (Pak wan, vegetable crop)  
+  - *Momordica cochinchinensis* (Gac fruit, climbing vegetable)  
+  - *Peperomia pellucida* (Shiny bush, herb)  
+  - *Physalis angulata* (Ground cherry, herbaceous plant)  
+  - *Piper lolot* (Wild betel leaf, herbaceous vine)  
+  - *Plantago major* (Plantain herb)  
+
+- **Trees**:  
+  - *Baccaurea ramiflora* (Burmese grape tree)  
+  - *Ficus auriculata* (Fig tree)  
+  - *Ficus callosa* (Fig tree)  
+  - *Ficus heterophyllus* (Fig tree)  
+  - *Ficus racemosa* (Cluster fig tree)  
+  - *Nephelium lappaceum* (Rambutan tree)  
+  - *Oroxylum indicum* (Tree)  
+  - *Rubus cochinchinensis* (Tree-like shrub)  
+  - *Saurauia tristyla* (Tree)  
+  - *Zanthoxylum rhetsa* (Prickly ash tree)  
+
+- **Flowering Plants (Ornamentals, Medicinal, & Wild Edibles)**:  
+  - *Clausena indica* (Wild edible, citrus family)  
+  - *Clerodendrum chinense* (Glory bower, flowering plant)  
+  - *Clerodendrum cyrtophyllum* (Wild medicinal plant)  
+  - *Clerodendrum kaempferi* (Ornamental plant)  
+  - *Clerodendrum philippinum* (Glory flower, ornamental)  
+  - *Clerodendrum quadriloculare* (Ornamental, medicinal)  
+  - *Wedelia trilobata* (Creeping daisy, ground cover)  
+  - *Polygonum perfoliatum* (Mile-a-minute vine, invasive)  
+
+
+## Create species files
 
 Create `species_files` a list of species and their corresponding `.R` files from all field visits. `species_files` is used for updating in the section Update based on field observations @update_model
 
-```{r species_files_prior}
+```{r species_files_first_visits}
 # List of species and their corresponding `.R` files
 species_files <- list(
   # === One very common species 
@@ -205,7 +283,7 @@ species_files <- list(
 
 ## Create `species_data` 
 
-As a last step we apply the `add_species_data.R` function to add default prior species data to our existing datasets (where missing, which is not usually the case). 
+As a last step we apply the `add_species_data.R` function to add the initial species data to our existing datasets (where missing, which is not usually the case). 
 
 ```{r add_species_data}
 source("functions/add_species_data.R")
