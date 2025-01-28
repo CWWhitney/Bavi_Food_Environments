@@ -20,9 +20,9 @@ Here we use Monte Carlo simulations based on expert knowledge. This is a well-es
 ```{r child="A_Generalized_function.Rmd"}
 ```
 
-# Prior Estimates 
+# Estimates 
 
-```{r child = "B_Prior_estimates.Rmd"}
+```{r child = "B_Estimates.Rmd"}
 ```
 
 # Update based on field observations {#update_model}

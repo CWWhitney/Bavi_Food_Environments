@@ -64,14 +64,14 @@ data$parts_used <- translate_column(data$parts_used, translation_dict3)
 If `nutritional_value` is high then the effects on `DietaryDiversity` will be raised. If `Low` effects on `DietaryDiversity` will be lowered. 
 
 ```{r translate_nutritional_value}
-translate_column(data$nutritional_value, translation_dict2)
+data$nutritional_value <- translate_column(data$nutritional_value, translation_dict2)
 
 ```
 
 If `number_of_users` is `Many` then `TraditionalKnowledge` Effect would be lower and SD would be narrower for `control_access`. If it is `Few` then `DietaryDiversity` effects will be lower. 
 
 ```{r translate_number_of_users}
-translate_column(data$number_of_users, translation_dict2)
+data$number_of_users <- translate_column(data$number_of_users, translation_dict2)
 
 ```
 

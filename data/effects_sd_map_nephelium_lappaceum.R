@@ -1,7 +1,7 @@
-# Nephrolepis cordifolia (Family: Nephrolepidaceae) likely mistaken for nephelium_lappaceum
-# Common names: Narrow Sword Fern, Tuberous Sword Fern
-# A widespread fern with edible tubers, often used in traditional medicine.
-# It is valued for erosion control and as an ornamental plant.
+# Nephelium lappaceum (Family: Sapindaceae)
+# Common names: Rambutan
+# A widely cultivated tropical fruit tree valued for its economic and nutritional importance.
+# It plays a role in agroforestry systems and traditional livelihoods.
 
 effects_sd_map_nephelium_lappaceum <- list(
   SpeciesConservation = list(
@@ -12,7 +12,7 @@ effects_sd_map_nephelium_lappaceum <- list(
     provide_seedlings = list(Effect = 0.05, SD = 0.02)  # Providing seedlings promotes controlled cultivation.
   ),
   DietaryDiversity = list(
-    control_access = list(Effect = 0.1, SD = 0.05),  # Restriction reduces access to tubers as a food source.
+    control_access = list(Effect = 0.1, SD = 0.05),  # Restriction reduces access to fruits as a food source.
     provide_access_control_harvest = list(Effect = 0.1, SD = 0.05),  # Harvesting control can ensure sustainable use.
     allow_access_forest_parts = list(Effect = 0.1, SD = 0.05),  # Access enables collection for dietary purposes.
     allow_access_limited_time = list(Effect = 0.1, SD = 0.05),  # Limited access has neutral effects.

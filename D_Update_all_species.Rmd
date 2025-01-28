@@ -1,14 +1,10 @@
-## Create `bayesian_update_function`
-
-Create a function for Bayesian updating with `purrr`, `fs` and `stringr`
-
-```{r bayesian_update_function}
-source("functions/bayesian_update.R")
-```
-
-Define directories
+## Define directories
 
 ```{r define_directories}
+library(purrr)
+library(fs)
+library(stringr)
+
 # Define directories
 species_dir <- "data"
 updated_dir <- "data/updated"
@@ -75,7 +71,7 @@ Create updated data for the assessment of management options for food environmen
 ```{r process_species}
 
 # Function to process each species
-# Effect constraints (-1 to 1)
+
 process_species <- function(species_name) {
   
   # Construct file paths
@@ -115,62 +111,64 @@ process_species <- function(species_name) {
   high_number_of_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Many")
   few_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Few")
   
-  # Adjust SpeciesConservation & SustainableFoodEnv for rare species
-  if (rare_species) {
-  effects_data$SpeciesConservation$control_access$Effect <- min(1, effects_data$SpeciesConservation$control_access$Effect + 0.1)
-  effects_data$SpeciesConservation$control_access$SD <- max(0.01, effects_data$SpeciesConservation$control_access$SD - 0.01)
-  
-  effects_data$SpeciesConservation$provide_seedlings$Effect <- min(1, effects_data$SpeciesConservation$provide_seedlings$Effect + 0.15)
-  effects_data$SpeciesConservation$provide_seedlings$SD <- max(0.01, effects_data$SpeciesConservation$provide_seedlings$SD - 0.01)
+if (rare_species) {
+  effects_data$SpeciesConservation$control_access$Effect <- effects_data$SpeciesConservation$control_access$Effect + 0.1
+  effects_data$SpeciesConservation$control_access$SD <- pmax(0, effects_data$SpeciesConservation$control_access$SD - 0.01)
+
+  effects_data$SpeciesConservation$provide_seedlings$Effect <- effects_data$SpeciesConservation$provide_seedlings$Effect + 0.15
+  effects_data$SpeciesConservation$provide_seedlings$SD <- pmax(0, effects_data$SpeciesConservation$provide_seedlings$SD - 0.1)
 }
-  
-  # Adjust SpeciesConservation & SustainableFoodEnv for common species
+
+# Adjust SpeciesConservation & SustainableFoodEnv for common species
 if (common_species) {
-  effects_data$SpeciesConservation$control_access$Effect <- max(-1, effects_data$SpeciesConservation$control_access$Effect - 0.1)
-  effects_data$SpeciesConservation$control_access$SD <- min(0.2, effects_data$SpeciesConservation$control_access$SD + 0.01)
-  
-  effects_data$SpeciesConservation$provide_seedlings$Effect <- max(-1, effects_data$SpeciesConservation$provide_seedlings$Effect - 0.15)
-  effects_data$SpeciesConservation$provide_seedlings$SD <- min(0.2, effects_data$SpeciesConservation$provide_seedlings$SD + 0.01)
+  effects_data$SpeciesConservation$control_access$Effect <- effects_data$SpeciesConservation$control_access$Effect - 0.1
+  effects_data$SpeciesConservation$control_access$SD <- pmax(0, effects_data$SpeciesConservation$control_access$SD + 0.1)
+
+  effects_data$SpeciesConservation$provide_seedlings$Effect <- effects_data$SpeciesConservation$provide_seedlings$Effect - 0.15
+  effects_data$SpeciesConservation$provide_seedlings$SD <- pmax(0, effects_data$SpeciesConservation$provide_seedlings$SD + 0.1)
 }
-  
-  # Adjust for destructive harvesting
-  if (destructive_harvest) {
-  effects_data$SpeciesConservation$control_access$Effect <- max(-1, effects_data$SpeciesConservation$control_access$Effect - 0.05)
-  effects_data$SpeciesConservation$control_access$SD <- min(0.2, effects_data$SpeciesConservation$control_access$SD + 0.005)
 
-  effects_data$SpeciesConservation$provide_access_control_harvest$Effect <- max(-1, effects_data$SpeciesConservation$provide_access_control_harvest$Effect - 0.05)
-  effects_data$SpeciesConservation$provide_access_control_harvest$SD <- min(0.2, effects_data$SpeciesConservation$provide_access_control_harvest$SD + 0.005)
+# Adjust for destructive harvesting
+if (destructive_harvest) {
+  effects_data$SpeciesConservation$control_access$Effect <- effects_data$SpeciesConservation$control_access$Effect - 0.5
+  effects_data$SpeciesConservation$control_access$SD <- pmax(0, effects_data$SpeciesConservation$control_access$SD + 0.5)
 
-  effects_data$SpeciesConservation$allow_access_forest_parts$Effect <- max(-1, effects_data$SpeciesConservation$allow_access_forest_parts$Effect - 0.05)
-  effects_data$SpeciesConservation$allow_access_forest_parts$SD <- min(0.2, effects_data$SpeciesConservation$allow_access_forest_parts$SD + 0.005)
+  effects_data$SpeciesConservation$provide_access_control_harvest$Effect <- effects_data$SpeciesConservation$provide_access_control_harvest$Effect - 0.5
+  effects_data$SpeciesConservation$provide_access_control_harvest$SD <- pmax(0, effects_data$SpeciesConservation$provide_access_control_harvest$SD + 0.5)
 
-  effects_data$SpeciesConservation$allow_access_limited_time$Effect <- max(-1, effects_data$SpeciesConservation$allow_access_limited_time$Effect - 0.05)
-  effects_data$SpeciesConservation$allow_access_limited_time$SD <- min(0.2, effects_data$SpeciesConservation$allow_access_limited_time$SD + 0.005)
+  effects_data$SpeciesConservation$allow_access_forest_parts$Effect <- effects_data$SpeciesConservation$allow_access_forest_parts$Effect - 0.5
+  effects_data$SpeciesConservation$allow_access_forest_parts$SD <- pmax(0, effects_data$SpeciesConservation$allow_access_forest_parts$SD + 0.5)
+
+  effects_data$SpeciesConservation$allow_access_limited_time$Effect <- effects_data$SpeciesConservation$allow_access_limited_time$Effect - 0.5
+  effects_data$SpeciesConservation$allow_access_limited_time$SD <- pmax(0, effects_data$SpeciesConservation$allow_access_limited_time$SD + 0.5)
 }
-  
-  # Adjust for high/low nutrition
+
+# Adjust for high/low nutrition
 if (high_nutrition) {
-  effects_data$DietaryDiversity$Effect <- min(1, effects_data$DietaryDiversity$Effect + 0.05)
-  effects_data$DietaryDiversity$SD <- max(0.01, effects_data$DietaryDiversity$SD - 0.005)
+  effects_data$DietaryDiversity$Effect <- effects_data$DietaryDiversity$Effect + 0.05
+  effects_data$DietaryDiversity$SD <- pmax(0, effects_data$DietaryDiversity$SD - 0.5)
 }
 
 if (low_nutrition) {
-  effects_data$DietaryDiversity$Effect <- max(-1, effects_data$DietaryDiversity$Effect - 0.05)
-  effects_data$DietaryDiversity$SD <- min(0.2, effects_data$DietaryDiversity$SD + 0.005)
+  effects_data$DietaryDiversity$Effect <- effects_data$DietaryDiversity$Effect - 0.5
+  effects_data$DietaryDiversity$SD <- pmax(0, effects_data$DietaryDiversity$SD + 0.5)
 }
-  
-  # Adjust for high/few users
-  if (high_number_of_users) {
-    effects_data$TraditionalKnowledge$control_access$Effect <- effects_data$TraditionalKnowledge$control_access$Effect - 0.05
-    effects_data$TraditionalKnowledge$control_access$SD <- max(0.001, effects_data$TraditionalKnowledge$control_access$SD - 0.005)
-  }
-  
-  if (few_users) {
-    effects_data$DietaryDiversity <- map(effects_data$DietaryDiversity, ~{
-      list(Effect = .x$Effect - 0.05, SD = min(0.1, .x$SD + 0.005))
-    })
-  }
-  
+
+# Adjust for high/few users
+if (high_number_of_users) {
+  effects_data$TraditionalKnowledge$control_access$Effect <- effects_data$TraditionalKnowledge$control_access$Effect - 0.5
+  effects_data$TraditionalKnowledge$control_access$SD <- pmax(0, effects_data$TraditionalKnowledge$control_access$SD - 0.5)
+}
+
+if (few_users) {
+  effects_data$DietaryDiversity$Effect <- effects_data$DietaryDiversity$Effect + 0.5
+  effects_data$DietaryDiversity$SD <- pmax(0, effects_data$DietaryDiversity$SD - 0.5)
+}
+
+
+  # Assign modified data back before dumping
+  assign(loaded_objects[1], effects_data)
+
   # Save updated data as an R script
   dump(loaded_objects[1], file = updated_filepath)
   
@@ -208,12 +206,58 @@ Plot generate aggregated data for all species in `updated_species_files_named` w
 ```{r aggregate_species_data_updated}
 ### Plot an aggregated plot with `aggregate_species_data`
 
-source("functions/aggregate_species_data.R")
+# source("functions/aggregate_species_data.R")
 # Aggregate data across all species
-aggregated_data <- aggregate_species_data(updated_species_files_named)
+# aggregated_data <- aggregate_species_data(updated_species_files_named)
+
+library(dplyr)
+library(purrr)
+library(tidyr)
+
+# # Define directory
+updated_dir <- "data/updated"
+#
+# # List all .R files in the directory
+species_files <- list.files(updated_dir, pattern = "\\.R$", full.names = TRUE)
+
+# # Aggregate all species data
+aggregated_data_updated <- map_dfr(species_files, ~ {
+  source(.x, local = TRUE)  # Source the file
+  species_name <- gsub(".*effects_sd_map_(.*)\\.R", "\\1", .x)  # Extract species name
+  object_name <- paste0("effects_sd_map_", species_name)
+
+  if (!exists(object_name, envir = environment())) {
+    return(NULL)  # Skip if the object doesn't exist
+  }
+
+  effects_sd_map <- get(object_name, envir = environment())
+
+  # Ensure the structure is correct
+  map_dfr(names(effects_sd_map), function(outcome) {
+    map_dfr(names(effects_sd_map[[outcome]]), function(decision) {
+      decision_data <- effects_sd_map[[outcome]][[decision]]
+
+      # Check if data has both Effect and SD; otherwise, skip
+      if (!is.list(decision_data) || !all(c("Effect", "SD") %in% names(decision_data))) {
+        return(NULL)
+      }
+
+      tibble(
+        Species = species_name,
+        Outcome = outcome,
+        Decision = decision,
+        Effect = decision_data$Effect,
+        SD = decision_data$SD
+      )
+    })
+  })
+})
+```
+
+```{r aggregated_data_updated}
 
 # Summarize aggregated data
-summary_data <- aggregated_data %>%
+summary_data_updated <- aggregated_data_updated %>%
   group_by(Decision, Outcome) %>%
   summarize(
     MeanEffect = mean(Effect, na.rm = TRUE),
@@ -229,6 +273,14 @@ Apply `plot_aggregate_effects` to show the updated expectations across all the s
 library(ggplot2)
 source("functions/plot_aggregate_effects.R")
 # Plot the data
-plot_aggregate_effects(summary_data)
+plot_aggregate_effects(summary_data_updated)
 
 ```
+
+The aggregated results across all species reveal distinct patterns in the effects of different decision options on key outcomes, with varying levels of confidence (represented by the standard deviation, SD). Among the interventions, *provide_seedlings* demonstrates the strongest overall positive effects, particularly on **TraditionalKnowledge (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`)** and **SustainableFoodEnv (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "SustainableFoodEnv"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "SustainableFoodEnv"], 2)`)**, suggesting that increasing seedling availability contributes significantly to knowledge retention and environmental sustainability. However, it also leads to a notable **reduction in ParkExpenditure (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "ParkExpenditure"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "ParkExpenditure"], 2)`)**, indicating potential trade-offs in resource allocation.
+
+Other interventions, such as *control_access*, show mixed effects. While it improves **SpeciesConservation (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "control_access" & summary_data_updated$Outcome == "SpeciesConservation"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "control_access" & summary_data_updated$Outcome == "SpeciesConservation"], 2)`)**, it appears to slightly reduce **TraditionalKnowledge (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "control_access" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "control_access" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`)**, potentially due to restrictions on community engagement with the species. 
+
+Similarly, *allow_access_forest_parts* has a positive effect on **DietaryDiversity (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "allow_access_forest_parts" & summary_data_updated$Outcome == "DietaryDiversity"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "allow_access_forest_parts" & summary_data_updated$Outcome == "DietaryDiversity"], 2)`)** but has a neutral or slightly negative impact on **ParkExpenditure (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "allow_access_forest_parts" & summary_data_updated$Outcome == "ParkExpenditure"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "allow_access_forest_parts" & summary_data_updated$Outcome == "ParkExpenditure"], 2)`)**. 
+
+Overall, these results highlight key trade-offs between conservation, knowledge retention, and resource allocation, emphasizing the importance of balancing access policies with sustainability goals.
