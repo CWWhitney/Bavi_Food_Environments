@@ -349,12 +349,12 @@ summary_data <- aggregated_data %>%
 
 ```
 
-Apply `plot_aggregate_effects`
+<!-- Apply `plot_aggregate_effects` -->
 
-```{r plot_aggregate_effects}
-library(ggplot2)
-source("functions/plot_aggregate_effects.R")
-# Plot the data
-plot_aggregate_effects(summary_data)
+<!-- ```{r plot_aggregate_effects} -->
+<!-- library(ggplot2) -->
+<!-- source("functions/plot_aggregate_effects.R") -->
+<!-- # Plot the data -->
+<!-- plot_aggregate_effects(summary_data) -->
 
-```
+<!-- ``` -->
