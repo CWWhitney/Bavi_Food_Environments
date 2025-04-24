@@ -1665,13 +1665,21 @@ aggregated plot with <code>aggregate_species_data</code></a></li>
 </ul>
 </div>
 
-<p>Here we use Monte Carlo simulations based on expert knowledge. This
-is a well-established and flexible method for decision modeling.
-Allowing for use of expert-derived probabilities and variances to
-estimate outcomes, even when data is sparse. With this method we can
-capture the variability and uncertainty in model inputs. We can apply
-this to guide decision-making by identifying likely outcomes and their
-variability.</p>
+<p>This project is concerned with the interralted issues of conservation
+and nutrition. Specifically we are applying Monte Carlo simulations
+based on expert knowledge to assess the dietary and conservation
+implications of allowing forest access to communities around a
+conservation area in Vietnam.</p>
+<p>We use well-established and flexible method for decision modeling
+with expert-derived probabilities and variances to estimate outcomes.
+With this method we can capture the variability and uncertainty in model
+inputs. We can apply this to guide decision-making by identifying likely
+outcomes and their variability.</p>
+<p>We go through several iterative processes to simulate the effects of
+different park management strategies (e.g., restricting access,
+providing seedlings) on species conservation, dietary diversity,
+financial cost to the park service and cultural heritage, i.e. retaining
+or losing traditional knowledge.</p>
 <div id="generalized-function" class="section level1">
 <h1>Generalized Function</h1>
 <p>The function simulates outcomes for decision options. The
@@ -1744,12 +1752,13 @@ access, providing seedlings) on:</p>
 </ul>
 <p>By comparing the simulated outcomes for each strategy,
 decision-makers can identify trade-offs and prioritize actions. The
-function can handle multiple decision options and outcomes with ease. It
-incorporates expert-defined variability_list distributions for outcome
-variability. It also explicitly separates decision logic, outcome
-effects, and variability_list, ensuring clarity and reproducibility. For
-each decision option and outcome, the function calculates the
-<strong>Outcome Value</strong> using the following formula:</p>
+function can handle multiple decision options and outcomes. It
+incorporates expert-defined <code>variability_list</code> distributions
+for outcome variability. It also explicitly separates decision logic,
+outcome effects, and <code>variability_list</code>, ensuring clarity and
+reproducibility. For each decision option and outcome, the function
+calculates the <strong>Outcome Value</strong> using the following
+formula:</p>
 <p><span class="math display">\[
 \text{Outcome Value} = \sum_{i=1}^{n} \text{Decision}_i \times
 \text{Weight}_i + \text{variability_list}
@@ -1802,8 +1811,8 @@ forest_access_graph &lt;- grViz(&quot;
 &quot;)
 
 forest_access_graph</code></pre>
-<div class="grViz html-widget html-fill-item" id="htmlwidget-c03d288894d8b292dc3b" style="width:672px;height:480px;"></div>
-<script type="application/json" data-for="htmlwidget-c03d288894d8b292dc3b">{"x":{"diagram":"\n  digraph forest_access_model {\n    graph [layout = dot, rankdir = LR, splines = line]\n\n    // Define node styles\n    node [shape = box, fontname = Helvetica]\n\n    // Define nodes\n    ControlAccess [label = \"Control Access\"]\n    ProvideAccessControlHarvest [label = \"Provide Access + Control Harvest\"]\n    AllowAccessForestParts [label = \"Allow Access to Forest Parts\"]\n    AllowAccessLimitedTime [label = \"Allow Access for Limited Time\"]\n    ProvideSeedlings [label = \"Provide Seedlings\"]\n\n    SpeciesConservation [label = \"Species Conservation\"]\n    DietaryDiversity [label = \"Dietary Diversity\"]\n    SustainableFoodEnv [label = \"Sustainable Food Environment\"]\n    ParkExpenditure [label = \"Park Expenditure\"]\n    TraditionalKnowledge [label = \"Traditional Knowledge\"]\n\n    // Define relationships between nodes\n    ControlAccess -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n    ProvideAccessControlHarvest -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n    AllowAccessForestParts -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n    AllowAccessLimitedTime -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n    ProvideSeedlings -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n  }\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-0e9ce4501e65f9a48d56" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-0e9ce4501e65f9a48d56">{"x":{"diagram":"\n  digraph forest_access_model {\n    graph [layout = dot, rankdir = LR, splines = line]\n\n    // Define node styles\n    node [shape = box, fontname = Helvetica]\n\n    // Define nodes\n    ControlAccess [label = \"Control Access\"]\n    ProvideAccessControlHarvest [label = \"Provide Access + Control Harvest\"]\n    AllowAccessForestParts [label = \"Allow Access to Forest Parts\"]\n    AllowAccessLimitedTime [label = \"Allow Access for Limited Time\"]\n    ProvideSeedlings [label = \"Provide Seedlings\"]\n\n    SpeciesConservation [label = \"Species Conservation\"]\n    DietaryDiversity [label = \"Dietary Diversity\"]\n    SustainableFoodEnv [label = \"Sustainable Food Environment\"]\n    ParkExpenditure [label = \"Park Expenditure\"]\n    TraditionalKnowledge [label = \"Traditional Knowledge\"]\n\n    // Define relationships between nodes\n    ControlAccess -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n    ProvideAccessControlHarvest -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n    AllowAccessForestParts -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n    AllowAccessLimitedTime -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n    ProvideSeedlings -> {SpeciesConservation DietaryDiversity SustainableFoodEnv ParkExpenditure TraditionalKnowledge}\n  }\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 <p>In this model ParkExpenditure refers to the additional costs incurred
 (or saved) by implementing food access strategies, more is worse. All
 other values are positive, more is better.</p>
