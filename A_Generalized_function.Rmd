@@ -33,7 +33,7 @@ For a conservation project, this function will be used to simulate the effects o
 - Expenditure: Financial cost to the park service.
 - Cultural heritage: Loss of traditional knowledge.
 
-By comparing the simulated outcomes for each strategy, decision-makers can identify trade-offs and prioritize actions. The function can handle multiple decision options and outcomes with ease. It incorporates expert-defined variability_list distributions for outcome variability. It also explicitly separates decision logic, outcome effects, and variability_list, ensuring clarity and reproducibility. For each decision option and outcome, the function calculates the **Outcome Value** using the following formula:
+By comparing the simulated outcomes for each strategy, decision-makers can identify trade-offs and prioritize actions. The function can handle multiple decision options and outcomes. It incorporates expert-defined `variability_list` distributions for outcome variability. It also explicitly separates decision logic, outcome effects, and `variability_list`, ensuring clarity and reproducibility. For each decision option and outcome, the function calculates the **Outcome Value** using the following formula:
 
 \[
 \text{Outcome Value} = \sum_{i=1}^{n} \text{Decision}_i \times \text{Weight}_i + \text{variability_list}
