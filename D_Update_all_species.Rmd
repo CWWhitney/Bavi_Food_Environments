@@ -273,11 +273,19 @@ Apply `plot_aggregate_effects` to show the updated expectations across all the s
 library(ggplot2)
 source("functions/plot_aggregate_effects.R")
 # Plot the data
-plot_aggregate_effects(summary_data_updated)
-
+aggregate_effects_plot <- plot_aggregate_effects(summary_data_updated)
+ggsave(
+  filename = "figures/aggregate_effects_plot.png",
+  plot = aggregate_effects_plot,
+  scale = 1,
+  width = 16,
+  height = 12,
+  units = c("cm"),
+  dpi = 400)
+aggregate_effects_plot
 ```
 
-The aggregated results across all species reveal distinct patterns in the effects of different decision options on key outcomes, with varying levels of confidence (represented by the standard deviation, SD). Among the interventions, *provide_seedlings* demonstrates the strongest overall positive effects, particularly on **TraditionalKnowledge (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`)** and **SustainableFoodEnv (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "SustainableFoodEnv"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "SustainableFoodEnv"], 2)`)**, suggesting that increasing seedling availability contributes significantly to knowledge retention and environmental sustainability. However, it also leads to a notable **reduction in ParkExpenditure (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "ParkExpenditure"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "ParkExpenditure"], 2)`)**, indicating potential trade-offs in resource allocation.
+The aggregated results across all species reveal distinct patterns in the effects of different decision options on key outcomes, with varying levels of confidence (represented by the standard deviation, SD). Among the interventions, *provide_seedlings* demonstrates the strongest overall positive effects, particularly on **TraditionalKnowledge (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`)** and **SustainableFoodEnv (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "SustainableFoodEnv"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "SustainableFoodEnv"], 2)`)**, suggesting that increasing seedling availability contributes significantly to knowledge retention and environmental sustainability. It also leads to a notable **reduction in ParkExpenditure (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "ParkExpenditure"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "provide_seedlings" & summary_data_updated$Outcome == "ParkExpenditure"], 2)`)**, indicating potential for resource allocation.
 
 Other interventions, such as *control_access*, show mixed effects. While it improves **SpeciesConservation (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "control_access" & summary_data_updated$Outcome == "SpeciesConservation"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "control_access" & summary_data_updated$Outcome == "SpeciesConservation"], 2)`)**, it appears to slightly reduce **TraditionalKnowledge (`r round(summary_data_updated$MeanEffect[summary_data_updated$Decision == "control_access" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`, SD = `r round(summary_data_updated$MeanSD[summary_data_updated$Decision == "control_access" & summary_data_updated$Outcome == "TraditionalKnowledge"], 2)`)**, potentially due to restrictions on community engagement with the species. 
 
