@@ -13,11 +13,13 @@ library(reshape2)
 library(tidyverse)
 ```
 
-This project is concerned with the interralted issues of conservation and nutrition. Specifically we are applying Monte Carlo simulations based on expert knowledge to assess the dietary and conservation implications of allowing forest access to communities around a conservation area in Vietnam.
+This project is concerned with the interrelated issues of conservation and nutrition. Specifically we are applying Monte Carlo simulations based on expert knowledge to assess the dietary and conservation implications of allowing forest access to communities around a conservation area in Vietnam.
 
 We use well-established and flexible method for decision modeling with expert-derived probabilities and variances to estimate outcomes. With this method we can capture the variability and uncertainty in model inputs. We can apply this to guide decision-making by identifying likely outcomes and their variability.
 
 We go through several iterative processes to simulate the effects of different park management strategies (e.g., restricting access, providing seedlings) on species conservation, dietary diversity, financial cost to the park service and cultural heritage, i.e. retaining or losing traditional knowledge.
+
+![Should Bavi Park Authority and Local Gov't authorities be willing to allow access to the buffer zone or maintain current mostly exclusionary practice - Implications for sustainable food environments of local people](figures/Bavi_Food_Env_Diagram.png)
 
 # Generalized Function 
 
