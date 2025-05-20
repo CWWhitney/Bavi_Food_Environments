@@ -48,7 +48,7 @@ Where
 ```{r forest_access_graph}
 # Load necessary libraries
 library(DiagrammeR)
-library(DiagrammeRsvg)
+# library(DiagrammeRsvg)
 library(rsvg)
 
 # Create the updated graph
