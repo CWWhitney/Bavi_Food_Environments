@@ -1,21 +1,22 @@
 effects_sd_map_piper_lolot <-
-list(SpeciesConservation = list(control_access = list(Effect = -0.40000000000000002, 
-    SD = 0.62), provide_access_control_harvest = list(Effect = -0.34999999999999998, 
-    SD = 0.52000000000000002), allow_access_forest_parts = list(
-    Effect = -0.40000000000000002, SD = 0.52000000000000002), 
-    allow_access_limited_time = list(Effect = -0.45000000000000001, 
-        SD = 0.52000000000000002), provide_seedlings = list(Effect = -0.099999999999999992, 
-        SD = 0.12000000000000001)), DietaryDiversity = list(control_access = list(
-    Effect = 0.10000000000000001, SD = 0.050000000000000003), 
-    provide_access_control_harvest = list(Effect = 0.10000000000000001, 
-        SD = 0.050000000000000003), allow_access_forest_parts = list(
+list(SpeciesConservation = list(control_access = list(Effect = 0.10000000000000001, 
+    SD = 0.029999999999999999), provide_access_control_harvest = list(
+    Effect = 0.099999999999999992, SD = 0.025000000000000001), 
+    allow_access_forest_parts = list(Effect = 0.050000000000000003, 
+        SD = 0.025000000000000001), allow_access_limited_time = list(
+        Effect = 0, SD = 0.025000000000000001), provide_seedlings = list(
+        Effect = -0.050000000000000003, SD = 0.029999999999999999)), 
+    DietaryDiversity = list(control_access = list(Effect = 0.10000000000000001, 
+        SD = 0.050000000000000003), provide_access_control_harvest = list(
         Effect = 0.10000000000000001, SD = 0.050000000000000003), 
-    allow_access_limited_time = list(Effect = 0.10000000000000001, 
-        SD = 0.050000000000000003), provide_seedlings = list(
-        Effect = 0.10000000000000001, SD = 0.050000000000000003)), 
-    SustainableFoodEnv = list(control_access = list(Effect = 0.050000000000000003, 
-        SD = 0.029999999999999999), provide_access_control_harvest = list(
-        Effect = 0.050000000000000003, SD = 0.029999999999999999), 
+        allow_access_forest_parts = list(Effect = 0.10000000000000001, 
+            SD = 0.050000000000000003), allow_access_limited_time = list(
+            Effect = 0.10000000000000001, SD = 0.050000000000000003), 
+        provide_seedlings = list(Effect = 0.10000000000000001, 
+            SD = 0.050000000000000003)), SustainableFoodEnv = list(
+        control_access = list(Effect = 0.050000000000000003, 
+            SD = 0.029999999999999999), provide_access_control_harvest = list(
+            Effect = 0.050000000000000003, SD = 0.029999999999999999), 
         allow_access_forest_parts = list(Effect = 0.050000000000000003, 
             SD = 0.029999999999999999), allow_access_limited_time = list(
             Effect = 0.050000000000000003, SD = 0.029999999999999999), 

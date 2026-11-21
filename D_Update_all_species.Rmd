@@ -47,10 +47,10 @@ library(knitr)
 table_data <- data.frame(
   State = c("Rare Species", "Common Species", "Destructive Harvest", "High Nutrition", 
             "Low Nutrition", "Many Users", "Few Users"),
-  Effect_Change = c("+0.05 to +0.1", "-0.05 to -0.1", "-0.05", "+0.05", 
-                    "-0.05", "-0.05", "-0.05"),
-  SD_Change = c("Decrease (more certainty)", "Increase (more uncertainty)", "+0.005", 
-                "Decrease", "Increase", "Decrease", "Increase"),
+  Effect_Change = c("+0.1 (control, seedlings)", "-0.1 (control, seedlings)",
+                    "-0.05 (access options)", "+0.05 (all options)",
+                    "-0.05 (all options)", "-0.05 (control)", "-0.05 (all options)"),
+  SD_Change = c("-0.01", "+0.01", "+0.005", "-0.01", "+0.01", "-0.01", "+0.01"),
   Interpretation = c(
     "Conservation actions are more effective with rare species, leading to a greater positive effect. Less uncertainty because of urgency and targeted efforts.",
     "Conservation efforts have less impact on common species, leading to a reduced effect. Higher uncertainty due to broader variability in population responses.",
@@ -103,7 +103,7 @@ process_species <- function(species_name) {
   effects_data <- get(loaded_objects[1])
   
   # Define prior knowledge-based parameters to update
-  rare_species <- any(data$scientific_name_snake_case == species_name & data$current_reserves %in% c("Few", "Not many"))
+  rare_species <- any(data$scientific_name_snake_case == species_name & data$current_reserves %in% c("Few", "Not_many"))
   common_species <- any(data$scientific_name_snake_case == species_name & data$current_reserves == "Many")
   destructive_harvest <- any(data$scientific_name_snake_case == species_name & data$parts_used == "destructive")
   high_nutrition <- any(data$scientific_name_snake_case == species_name & data$nutritional_value == "High")
@@ -111,60 +111,65 @@ process_species <- function(species_name) {
   high_number_of_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Many")
   few_users <- any(data$scientific_name_snake_case == species_name & data$number_of_users == "Few")
   
+# Shift the Effect and SD of one outcome for the named options.
+# Effect and SD live one level down, under each option, so the shift
+# must loop over the options (addressing effects_data$Outcome$Effect
+# directly creates an empty entry and changes nothing).
+shift_effect <- function(effects_data, outcome, options, d_effect, d_sd) {
+  for (opt in options) {
+    effects_data[[outcome]][[opt]]$Effect <- effects_data[[outcome]][[opt]]$Effect + d_effect
+    effects_data[[outcome]][[opt]]$SD <- pmax(0, effects_data[[outcome]][[opt]]$SD + d_sd)
+  }
+  effects_data
+}
+all_options <- c("control_access", "provide_access_control_harvest",
+                 "allow_access_forest_parts", "allow_access_limited_time",
+                 "provide_seedlings")
+access_options <- c("provide_access_control_harvest",
+                    "allow_access_forest_parts", "allow_access_limited_time")
+
+# Rare species: restrictions and seedlings do more for conservation,
+# with more certainty
 if (rare_species) {
-  effects_data$SpeciesConservation$control_access$Effect <- effects_data$SpeciesConservation$control_access$Effect + 0.1
-  effects_data$SpeciesConservation$control_access$SD <- pmax(0, effects_data$SpeciesConservation$control_access$SD - 0.01)
-
-  effects_data$SpeciesConservation$provide_seedlings$Effect <- effects_data$SpeciesConservation$provide_seedlings$Effect + 0.15
-  effects_data$SpeciesConservation$provide_seedlings$SD <- pmax(0, effects_data$SpeciesConservation$provide_seedlings$SD - 0.1)
+  effects_data <- shift_effect(effects_data, "SpeciesConservation",
+                               c("control_access", "provide_seedlings"), +0.1, -0.01)
 }
 
-# Adjust SpeciesConservation & SustainableFoodEnv for common species
+# Common species: the opposite
 if (common_species) {
-  effects_data$SpeciesConservation$control_access$Effect <- effects_data$SpeciesConservation$control_access$Effect - 0.1
-  effects_data$SpeciesConservation$control_access$SD <- pmax(0, effects_data$SpeciesConservation$control_access$SD + 0.1)
-
-  effects_data$SpeciesConservation$provide_seedlings$Effect <- effects_data$SpeciesConservation$provide_seedlings$Effect - 0.15
-  effects_data$SpeciesConservation$provide_seedlings$SD <- pmax(0, effects_data$SpeciesConservation$provide_seedlings$SD + 0.1)
+  effects_data <- shift_effect(effects_data, "SpeciesConservation",
+                               c("control_access", "provide_seedlings"), -0.1, +0.01)
 }
 
-# Adjust for destructive harvesting
+# Destructive harvest (roots, stems, whole plants): allowing access
+# lowers the conservation effect; control and seedlings are unchanged
 if (destructive_harvest) {
-  effects_data$SpeciesConservation$control_access$Effect <- effects_data$SpeciesConservation$control_access$Effect - 0.5
-  effects_data$SpeciesConservation$control_access$SD <- pmax(0, effects_data$SpeciesConservation$control_access$SD + 0.5)
-
-  effects_data$SpeciesConservation$provide_access_control_harvest$Effect <- effects_data$SpeciesConservation$provide_access_control_harvest$Effect - 0.5
-  effects_data$SpeciesConservation$provide_access_control_harvest$SD <- pmax(0, effects_data$SpeciesConservation$provide_access_control_harvest$SD + 0.5)
-
-  effects_data$SpeciesConservation$allow_access_forest_parts$Effect <- effects_data$SpeciesConservation$allow_access_forest_parts$Effect - 0.5
-  effects_data$SpeciesConservation$allow_access_forest_parts$SD <- pmax(0, effects_data$SpeciesConservation$allow_access_forest_parts$SD + 0.5)
-
-  effects_data$SpeciesConservation$allow_access_limited_time$Effect <- effects_data$SpeciesConservation$allow_access_limited_time$Effect - 0.5
-  effects_data$SpeciesConservation$allow_access_limited_time$SD <- pmax(0, effects_data$SpeciesConservation$allow_access_limited_time$SD + 0.5)
+  effects_data <- shift_effect(effects_data, "SpeciesConservation",
+                               access_options, -0.05, +0.005)
 }
 
-# Adjust for high/low nutrition
+# High or low nutritional value raises or lowers dietary diversity
 if (high_nutrition) {
-  effects_data$DietaryDiversity$Effect <- effects_data$DietaryDiversity$Effect + 0.05
-  effects_data$DietaryDiversity$SD <- pmax(0, effects_data$DietaryDiversity$SD - 0.5)
+  effects_data <- shift_effect(effects_data, "DietaryDiversity",
+                               all_options, +0.05, -0.01)
 }
-
 if (low_nutrition) {
-  effects_data$DietaryDiversity$Effect <- effects_data$DietaryDiversity$Effect - 0.5
-  effects_data$DietaryDiversity$SD <- pmax(0, effects_data$DietaryDiversity$SD + 0.5)
+  effects_data <- shift_effect(effects_data, "DietaryDiversity",
+                               all_options, -0.05, +0.01)
 }
 
-# Adjust for high/few users
+# Many users: controlling access lowers traditional knowledge, with
+# more certainty
 if (high_number_of_users) {
-  effects_data$TraditionalKnowledge$control_access$Effect <- effects_data$TraditionalKnowledge$control_access$Effect - 0.5
-  effects_data$TraditionalKnowledge$control_access$SD <- pmax(0, effects_data$TraditionalKnowledge$control_access$SD - 0.5)
+  effects_data <- shift_effect(effects_data, "TraditionalKnowledge",
+                               "control_access", -0.05, -0.01)
 }
 
+# Few users: dietary diversity effects are lower, with less certainty
 if (few_users) {
-  effects_data$DietaryDiversity$Effect <- effects_data$DietaryDiversity$Effect + 0.5
-  effects_data$DietaryDiversity$SD <- pmax(0, effects_data$DietaryDiversity$SD - 0.5)
+  effects_data <- shift_effect(effects_data, "DietaryDiversity",
+                               all_options, -0.05, +0.01)
 }
-
 
   # Assign modified data back before dumping
   assign(loaded_objects[1], effects_data)
